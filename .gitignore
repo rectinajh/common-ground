@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.*
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Foundry
+out/
+cache/
+broadcast/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Local artifacts and secrets
+artifacts/
+.coverage/
+coverage/
