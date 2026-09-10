@@ -113,12 +113,14 @@ docs/                   架构、部署、证据及开发说明
 
 ## 文档
 
-- 产品需求文档：[COMMON_GROUND_PRD_v1.0.md](./COMMON_GROUND_PRD_v1.0.md)
+- 产品需求文档：[COMMON_GROUND_PRD_v1.0.md](./docs/COMMON_GROUND_PRD_v1.0.md)
 - 技术文档：[docs/TECHNICAL.md](./docs/TECHNICAL.md)
 
 ## 快速开始
 
 > 代码尚未初始化。开始开发前必须先通过三项集成门禁 `G0-A`、`G0-B`、`G0-C`，详见技术文档和 PRD 第 04 节。
+
+P0 范围已收窄：一个计划、一个市场、一个基础任务、一个条件 bonus，不做多计划、排行榜、多市场和通用仲裁。完整决策见 [docs/CEO_PLAN.md](./docs/CEO_PLAN.md)。
 
 开发顺序建议：
 

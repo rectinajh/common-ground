@@ -4,7 +4,7 @@
 
 COMMON GROUND 是一个部署在 Somnia EVM 测试网上的条件式公共行动协议。它使用 DreamDEX Event Contracts 的完整结果份额作为可组合的公共任务资金，并在市场结算前启动确定任务，在市场结算后按条件启动追加任务。
 
-本文件描述架构、模块、数据模型、接口、集成门禁和开发顺序。业务规则以 [COMMON_GROUND_PRD_v1.0.md](../COMMON_GROUND_PRD_v1.0.md) 为准。
+本文件描述架构、模块、数据模型、接口、集成门禁和开发顺序。业务规则以 [COMMON_GROUND_PRD_v1.0.md](./COMMON_GROUND_PRD_v1.0.md) 为准。
 
 ## 2. Architecture
 
@@ -255,3 +255,5 @@ The PRD defines T01–T34. Critical areas:
 7. plan and support UI, evidence page, exit page;
 8. disconnection recovery, permission, precision, race and security tests;
 9. deploy, document, demo, archive evidence.
+
+The P0 scope is narrowed to one plan, one market, one base task, and one conditional bonus. Multi-plan UI, leaderboards, multiple markets, generic arbitration, and on-chain Reactivity are deferred. See `docs/CEO_PLAN.md` for the accepted and cut items.
