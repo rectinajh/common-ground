@@ -55,9 +55,10 @@ Each plan is a separate, non-upgradeable campaign contract. It owns:
 - task escrow and payment state;
 - refund and exit rights.
 
-### Proposed Interfaces
+### Locked Interfaces
 
-These are project-designed interfaces, not DreamDEX methods.
+These are project-designed interfaces, not DreamDEX methods. They are now LOCKED by the
+engineering review below and may only change with a reviewed decision.
 
 | Interface | Responsibility |
 |---|---|
@@ -77,6 +78,22 @@ These are project-designed interfaces, not DreamDEX methods.
 | `getPlan()` / `getPosition(account)` / `getTask(index)` | Read rules, claimable items, evidence status |
 
 All state changes must happen before external transfers and include reentrancy protection.
+
+### DreamDEX Raw ABI (verified)
+
+The campaign interacts with DreamDEX through the raw ABI, not the TypeScript SDK:
+
+| Contract | Function | Role |
+|---|---|---|
+| `IBinaryMarketsModule` | `mergeCompleteSet(operatorId, venueId, marketId, amount)` | burn matched Up+Down → deterministic collateral (base budget) |
+| `IBinaryMarketsModule` | `redeem(operatorId, venueId, marketId, outcomeIdx, amount)` | burn winning BONUS shares → collateral after settlement |
+| `IBinaryPool` | `getBinaryPoolParams()` / `finalized()` / `marketExpiryNs()` | read live pool wiring and settlement state |
+| `IBinaryMarket` | `isResolved()` / `isVoided()` / `payoutNumerators()` | authoritative settlement, NOT the indexer |
+| `IOutcomeToken6909` | `balanceOf` / `isOperator` / `setOperator` / `transferFrom` | ERC-6909 result-share custody |
+| `IERC20Like` | `approve` / `transfer` / `transferFrom` | collateral movement |
+
+`operatorId` and `venueId` are frozen at deploy from the market's `MarketCreated` config —
+they are NOT readable from `getBinaryPoolParams()`.
 
 ## 5. Core Invariants
 
@@ -257,3 +274,92 @@ The PRD defines T01–T34. Critical areas:
 9. deploy, document, demo, archive evidence.
 
 The P0 scope is narrowed to one plan, one market, one base task, and one conditional bonus. Multi-plan UI, leaderboards, multiple markets, generic arbitration, and on-chain Reactivity are deferred. See `docs/CEO_PLAN.md` for the accepted and cut items.
+
+## 16. Architecture Lock & Test Scope (Eng Review)
+
+Status: LOCKED — reviewed 2026-09-11. P0 implementation follows this section.
+
+### 16.1 Locked decisions
+
+1. **Campaign is the only on-chain trust anchor.** One non-upgradeable
+   `CommonGroundCampaign` per plan. It holds ERC-6909 result shares and ERC-20
+   collateral, enforces the three-bucket ledger and the task lifecycle, and has no
+   admin, no upgrade path, and no arbitrary `call`.
+2. **DreamDEX integration is module-routed and raw-ABI.** The campaign calls
+   `IBinaryMarketsModule.mergeCompleteSet` (base budget) and
+   `IBinaryMarketsModule.redeem` (bonus settlement) directly, keyed by immutable
+   `operatorId` / `venueId` / `marketId` frozen at deploy. Contributors deposit via
+   ERC-6909 `transferFrom` after `setOperator(campaign, true)`.
+3. **Worker is read/advance only.** The off-chain worker indexes events and calls
+   permissionless `syncMarketAndBonus()` / `expireTask()` / `failFunding()`. It never
+   holds a key that can move funds and never declares a market result — the campaign
+   reads authoritative on-chain state (`isResolved` / `isVoided` / `payoutNumerators`).
+4. **Runner and verifier are separate.** The executor sandbox produces artifacts; an
+   independent verifier signs acceptance; only the campaign records final acceptance.
+5. **Three buckets, two liabilities, one invariant.** `BASE_UP` + `BASE_DOWN` pair into
+   deterministic base budget via `mergeCompleteSet`; `BONUS` redeems on a win. The
+   conservation invariant must hold at every state change:
+
+   ```text
+   registered deposits = unused + merged + redeemed + returned
+   actual collateral income = task reserve + executor receivable + refund payable + paid + refunded
+   ```
+
+6. **Scope is narrowed.** One plan, one market, one base task, one conditional bonus.
+   No multi-plan UI, no leaderboards, no generic arbitration, no Somnia on-chain
+   Reactivity. Executor and verifier are fixed addresses in the manifest.
+
+### 16.2 Integration risks (from review)
+
+- **R1 — `operatorId`/`venueId` are not on-chain readable.** They come from the market's
+  `MarketCreated` config (indexer / creation log), not `getBinaryPoolParams()`. They must
+  be captured and frozen at deploy. Verify in G0-B before trusting the merge/redeem path.
+- **R2 — ERC-6909 is operator-based, not ERC-20 approve.** A deposit needs the contributor
+  to `setOperator(campaign, true)` first, or use a direct `transfer` + `register`. The UI
+  must make this two-step legible; a direct `transfer` to the campaign is NOT a valid
+  contribution.
+- **R3 — gate writes on chain status, never the indexer.** `getMarketOnchain().status`
+  must equal `1` (Trading) for merge; indexer `status` is derived and can lag.
+- **R4 — Somnia gas differs from Ethereum.** Cancun baseline + EIP-7702, aggressive
+  state-creation pricing, ~6 gwei min base fee. Foundry must pin `evm_version = "cancun"`
+  and never hard-code gas numbers.
+
+### 16.3 Data flow (locked)
+
+```text
+contributor ──ERC-6909 setOperator→transferFrom──▶ campaign buckets
+                                                     │
+                        (both sides funded, one-time)
+                                                     ▼
+                                     campaign.mergeCompleteSet(module)
+                                                     │ deterministic collateral
+                                                     ▼
+                                             base task budget (READY)
+                                                     │
+                          executor sandbox ──artifact──▶ verifier ──accept──▶ campaign.pay
+                                                     │
+                          (market settles on-chain)
+                                                     ▼
+                                     campaign.syncMarketAndBonus()
+                                                     │
+                            win → campaign.redeem(BONUS) → bonus budget
+                            loss/void/expire → refund snapshots
+```
+
+### 16.4 P0 test scope (locked)
+
+Foundry unit tests (`forge test`) must cover, at minimum:
+
+| Area | Cases |
+|---|---|
+| Ledger | deposit/withdraw per bucket; quota; zero amount; address cap; direct transfer rejected |
+| Merge | both sides required; one-time activation; balance-verified; wrong market reverts |
+| Redeem | win, loss, voided (both legs), unresolved reverts; wrong outcomeIdx reverts |
+| Task | READY→RUNNING→SUBMITTED→ACCEPTED/REJECTED/EXPIRED; executor-only submit; verifier-only decide; cannot self-approve |
+| Payment | ACCEPTED → fixed payee only; accepted task not refundable |
+| Refund | failFunding, expire, closeBonus; refund pool sums exactly; no double-claim |
+| Security | reentrancy, precision (6 vs 18 decimals), race on sync/activate, stale planHash |
+
+Integration gates remain G0-A (share transfer + merge), G0-B (settlement redeem across
+win/loss/void), G0-C (isolated runner + independent verifier). The write path is coded in
+`packages/market/scripts/g0-spike.ts` and needs a funded Shannon testnet wallet.
