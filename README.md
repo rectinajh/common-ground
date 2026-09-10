@@ -9,6 +9,7 @@ COMMON GROUND 是一个条件式公共行动产品。参与者将同一 DreamDEX
 ## 项目状态
 
 - 阶段：产品设计与集成验证阶段，尚未实现
+- 集成状态：DreamDEX 读路径（G0）已通过，写路径代码就绪待测试钱包
 - 目标：Somnia × DreamDEX Event Contracts 可运行测试网原型
 - 产品名：COMMON GROUND
 - 能力名：Common Trigger 是自动触发能力，不是独立产品
@@ -118,7 +119,18 @@ docs/                   架构、部署、证据及开发说明
 
 ## 快速开始
 
-> 代码尚未初始化。开始开发前必须先通过三项集成门禁 `G0-A`、`G0-B`、`G0-C`，详见技术文档和 PRD 第 04 节。
+```bash
+npm install
+npm run spike:market   # 只读验证：发现市场 + 读链上状态
+```
+
+写路径（完整份额铸造/烧回）需要专用测试钱包和 STT gas：
+
+```bash
+DREAMDEX_PRIVATE_KEY=0x... npm run spike:market -- --write
+```
+
+集成细节、实测地址与门禁结果见 [docs/INTEGRATION.md](./docs/INTEGRATION.md)。
 
 P0 范围已收窄：一个计划、一个市场、一个基础任务、一个条件 bonus，不做多计划、排行榜、多市场和通用仲裁。完整决策见 [docs/CEO_PLAN.md](./docs/CEO_PLAN.md)。
 

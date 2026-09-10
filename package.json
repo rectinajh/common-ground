@@ -1,0 +1,23 @@
+{
+  "name": "common-ground",
+  "version": "0.1.0",
+  "private": true,
+  "description": "COMMON GROUND — conditional public action protocol on Somnia × DreamDEX",
+  "license": "UNLICENSED",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "spike:market": "npm run spike --workspace @common-ground/market",
+    "typecheck": "tsc --noEmit -p packages/market/tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
