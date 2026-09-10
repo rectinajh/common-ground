@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "spike": "npm run build && node dist/scripts/g0-spike.js",
+    "spike": "npm run build && node --env-file-if-exists=.env dist/scripts/g0-spike.js",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
