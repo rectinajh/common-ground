@@ -109,4 +109,95 @@ contract CommonGroundCampaignTest is Test {
         campaign.claimRefund();
         assertEq(collateral.balanceOf(alice), aliceBefore + 50);
     }
+
+    // ------------------------------------------------------------------ helpers
+
+    /// @dev Funds base (100 Up + 100 Down) and bonus (50 Up), then activates.
+    function fund() internal {
+        outcomeToken.mint(alice, YES_ID, 150);
+        outcomeToken.mint(bob, NO_ID, 100);
+        vm.prank(alice);
+        outcomeToken.setOperator(address(campaign), true);
+        vm.prank(bob);
+        outcomeToken.setOperator(address(campaign), true);
+
+        vm.prank(alice);
+        campaign.deposit(CommonGroundCampaign.Bucket.BaseUp, 100);
+        vm.prank(alice);
+        campaign.deposit(CommonGroundCampaign.Bucket.Bonus, 50);
+        vm.prank(bob);
+        campaign.deposit(CommonGroundCampaign.Bucket.BaseDown, 100);
+
+        campaign.activateBase();
+        assertEq(campaign.baseBudget(), 100);
+    }
+
+    // ------------------------------------------------------------- bonus branch
+
+    function testBonusWinFundsBonus() public {
+        fund();
+        market.setResolved(1, 0); // Up wins
+        campaign.syncMarketAndBonus();
+
+        assertEq(campaign.bonusBudget(), 50);
+        (CommonGroundCampaign.TaskState state,,,,,) = campaign.bonusTask();
+        assertEq(uint8(state), 1); // Ready
+    }
+
+    function testBonusLossSkipsBonus() public {
+        fund();
+        market.setResolved(0, 1); // Down wins
+        campaign.syncMarketAndBonus();
+
+        assertEq(campaign.bonusBudget(), 0);
+        (CommonGroundCampaign.TaskState state,,,,,) = campaign.bonusTask();
+        assertEq(uint8(state), 7); // Skipped
+    }
+
+    function testBonusVoidRefundsHalf() public {
+        fund();
+        market.setVoided();
+        campaign.syncMarketAndBonus();
+
+        assertEq(campaign.bonusBudget(), 0);
+        (CommonGroundCampaign.TaskState state,,,,,) = campaign.bonusTask();
+        assertEq(uint8(state), 7); // Skipped
+        assertEq(campaign.refundPool(), 25); // 50 / 2
+    }
+
+    // --------------------------------------------------------------- task expiry
+
+    function testExpireTaskRefunds() public {
+        fund();
+        uint256 startAt = block.timestamp;
+        vm.prank(executor);
+        campaign.startTask(0, startAt + 10, startAt + 100);
+
+        vm.warp(startAt + 200);
+        campaign.expireTask(0);
+
+        assertEq(campaign.refundPool(), 100);
+        (CommonGroundCampaign.TaskState state,,,,,) = campaign.baseTask();
+        assertEq(uint8(state), 6); // Expired
+    }
+
+    // ------------------------------------------------------------- funding fail
+
+    function testFundingFailsWhenSettled() public {
+        outcomeToken.mint(alice, YES_ID, 100);
+        outcomeToken.mint(bob, NO_ID, 100);
+        vm.prank(alice);
+        outcomeToken.setOperator(address(campaign), true);
+        vm.prank(bob);
+        outcomeToken.setOperator(address(campaign), true);
+        vm.prank(alice);
+        campaign.deposit(CommonGroundCampaign.Bucket.BaseUp, 100);
+        vm.prank(bob);
+        campaign.deposit(CommonGroundCampaign.Bucket.BaseDown, 100);
+
+        market.setResolved(1, 0);
+        campaign.failFunding();
+
+        assertEq(uint8(campaign.planState()), 3); // FundingFailed
+    }
 }
