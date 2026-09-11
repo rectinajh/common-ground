@@ -10,6 +10,7 @@ COMMON GROUND 是一个条件式公共行动产品。参与者将同一 DreamDEX
 
 - 阶段：产品设计与集成验证阶段，尚未实现
 - 集成状态：DreamDEX 读路径（G0）与份额铸造/合并（G0-A）已通过，结算赎回（G0-B）待结算市场
+- Live 前端：<https://common-ground-beige-gamma.vercel.app>
 - 目标：Somnia × DreamDEX Event Contracts 可运行测试网原型
 - 产品名：COMMON GROUND
 - 能力名：Common Trigger 是自动触发能力，不是独立产品

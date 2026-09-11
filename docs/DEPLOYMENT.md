@@ -12,6 +12,11 @@ Contracts: `packages/contracts`
 | Campaign (forge deploy, gas-gotcha verified) | `0xe53e5d8945d6c4b771f6eb9add448967d35a8ee9` | `0x7d48e9422af49ec9bbb64d13a0f995664f9a8c82ce955a83da1caaa5d3068e68` |
 | **Campaign (final end-to-end demo)** | **`0xb8d6153b6ca057c3b0f594493058a05f335d3198`** | `0xd431002eab001709a6cbbceb49ce534371f73394c077e2ed16ff8673425cd5a9` |
 
+## 1.1 Live web
+
+- Vercel (production): <https://common-ground-beige-gamma.vercel.app>
+- Vercel project: `common-ground` under `rectinajhs-projects`
+
 ## 2. End-to-end demo (final campaign)
 
 Bound market: `0x0000000000000000000000000000000000000000000000000000000000019b12`
