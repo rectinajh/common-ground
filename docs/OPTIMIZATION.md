@@ -6,7 +6,7 @@
 
 | 项 | 状态 | 落地证据 |
 |---|---|---|
-| P0-1 自定义域名 | ⛔ 阻塞 | 需要一个域名；拿到域名后在 Vercel 绑定即可 |
+| P0-1 自定义域名 | 🟡 临时别名已换 | `commonground-demo.vercel.app` 已绑定；但仍是 `vercel.app`，Blockaid 可能仍提示，彻底解决需自有域名 |
 | P0-2 一句话定位 | ✅ 完成 | 首屏 `1 Up + 1 Down = 1 抵押品` + 反直觉对比 |
 | P0-3 合约验证 | 🟡 待提交 | 扁平化源码已生成：`docs/verification/*.flattened.sol` |
 | P0-4 一键资助 + 进度 | ✅ 完成 | `App.tsx` 逐步 approve → mintSet → setOperator → deposit |

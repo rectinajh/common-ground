@@ -14,7 +14,8 @@ Contracts: `packages/contracts`
 
 ## 1.1 Live web
 
-- Vercel (production): <https://common-ground-beige-gamma.vercel.app>
+- Vercel (production): <https://commonground-demo.vercel.app>
+- Vercel (legacy fallback): <https://common-ground-beige-gamma.vercel.app>
 - Vercel project: `common-ground` under `rectinajhs-projects`
 
 ## 2. End-to-end demo (final campaign)

@@ -10,7 +10,7 @@ COMMON GROUND 是一个条件式公共行动产品。参与者将同一 DreamDEX
 
 - 阶段：测试网可运行原型，已跑通完整 live demo
 - 集成状态：DreamDEX 读路径（G0）、份额铸造/合并（G0-A）、结算赎回（G0-B）均已通过
-- Live 前端：<https://common-ground-beige-gamma.vercel.app>
+- Live 前端：<https://commonground-demo.vercel.app>
 - 产品名：COMMON GROUND
 
 ## 原则
