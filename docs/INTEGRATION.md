@@ -145,6 +145,21 @@ deposit 100 Up + 100 Down + 50 Up(bonus) → activateBase(merge)
 Stage 2（等待结算 → `syncMarketAndBonus` → 赎回 bonus）在窗口到期后运行
 `node dist/scripts/demo-endtoend.js 2` 完成。
 
+### Stage 2 结果（完整闭环已证明）
+
+市场结算后 `syncMarketAndBonus` 成功执行，最终链上状态：
+
+| 状态 | 值 | 含义 |
+|---|---|---|
+| `baseBudget` | `100000000`（100 tUSDC） | 基础任务无条件到位 |
+| `baseTask.state` | `1`（Ready） | 基础任务就绪、可执行 |
+| `bonusBudget` | `0` | Up 输了，条件 bonus 正确地不触发 |
+| `bonusTask.state` | `7`（Skipped） | 追加任务被跳过，资金不浪费 |
+| `syncMarketAndBonus` tx | `0x232df62a9d3226aea7fbf0a83ab5fcb247b3c4ec1ebc284678138fbf817db73b` | 结算推进 |
+
+结论：**「无条件 base + 有条件 bonus」双阶段协议在链上端到端成立**。基础任务无论市场
+方向如何都有 100 tUSDC 预算；追加任务只在约定方向获胜时才释放（本次 Up 输，正确跳过）。
+
 ### G0-C（执行器）— 待实现
 
 固定检查模板 + 隔离 runner + 独立验收，与链上托管解耦。
