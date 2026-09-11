@@ -83,17 +83,6 @@ contract MockModule {
         noId = noId_;
     }
 
-    function mergeCompleteSet(
-        uint32,
-        bytes32,
-        bytes32,
-        uint256 amount
-    ) external {
-        outcomeToken.burn(msg.sender, yesId, amount);
-        outcomeToken.burn(msg.sender, noId, amount);
-        collateral.mint(msg.sender, amount);
-    }
-
     function redeem(
         uint32,
         bytes32,
@@ -132,8 +121,19 @@ contract MockMarket {
 }
 
 contract MockPool {
+    MockOutcomeToken public immutable outcomeToken;
+    MockCollateral public immutable collateral;
+    uint256 public immutable yesId;
+    uint256 public immutable noId;
     bool public finalized;
     uint64 public expiryNs;
+
+    constructor(MockOutcomeToken o_, MockCollateral c_, uint256 yesId_, uint256 noId_) {
+        outcomeToken = o_;
+        collateral = c_;
+        yesId = yesId_;
+        noId = noId_;
+    }
 
     function setFinalized(bool f) external {
         finalized = f;
@@ -145,5 +145,11 @@ contract MockPool {
 
     function marketExpiryNs() external view returns (uint64) {
         return expiryNs;
+    }
+
+    function burnSet(uint256 amount) external {
+        outcomeToken.burn(msg.sender, yesId, amount);
+        outcomeToken.burn(msg.sender, noId, amount);
+        collateral.mint(msg.sender, amount);
     }
 }

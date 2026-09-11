@@ -15,15 +15,8 @@ interface IOutcomeToken6909 {
     ) external returns (bool);
 }
 
-/// @notice Module-routed complete-set merge and settlement redemption (v2 path).
+/// @notice Module-routed settlement redemption (v2 path).
 interface IBinaryMarketsModule {
-    function mergeCompleteSet(
-        uint32 operatorId,
-        bytes32 venueId,
-        bytes32 marketId,
-        uint256 amount
-    ) external;
-
     function redeem(
         uint32 operatorId,
         bytes32 venueId,
@@ -62,6 +55,7 @@ interface IBinaryPool {
     function getBinaryPoolParams() external view returns (BinaryPoolParams memory);
     function marketExpiryNs() external view returns (uint64);
     function finalized() external view returns (bool);
+    function burnSet(uint256 amount) external;
 }
 
 interface IERC20Like {

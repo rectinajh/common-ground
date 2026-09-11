@@ -243,8 +243,10 @@ contract CommonGroundCampaign {
         require(matched > 0, "no matched pair");
         require(_marketTrading(), "not trading");
 
-        // Pull matched YES + matched NO from this contract, credit collateral to it.
-        IBinaryMarketsModule(module).mergeCompleteSet(operatorId, venueId, marketId, matched);
+        // Burn matched YES + matched NO held by this contract, credit collateral to it.
+        // The pool pulls from this contract via an ERC-6909 operator grant.
+        IOutcomeToken6909(outcomeToken).setOperator(pool, true);
+        IBinaryPool(pool).burnSet(matched);
 
         mergedAmount = matched;
         baseBudget = matched;
@@ -271,6 +273,7 @@ contract CommonGroundCampaign {
 
         if (IBinaryMarket(market).isVoided()) {
             // Uniform void: redeem the bonus side at half and put it in the refund pool.
+            IOutcomeToken6909(outcomeToken).setOperator(module, true);
             IBinaryMarketsModule(module).redeem(operatorId, venueId, marketId, bonusOutcomeIdx, totalBonus);
             refundPool += totalBonus / 2;
             bonusBudget = 0;
@@ -285,6 +288,7 @@ contract CommonGroundCampaign {
         uint8 winner = numerators[0] > 0 ? 0 : 1;
 
         if (winner == bonusOutcomeIdx) {
+            IOutcomeToken6909(outcomeToken).setOperator(module, true);
             IBinaryMarketsModule(module).redeem(operatorId, venueId, marketId, bonusOutcomeIdx, totalBonus);
             bonusBudget = totalBonus;
             bonusTask.budget = totalBonus;

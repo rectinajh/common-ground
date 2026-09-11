@@ -104,6 +104,20 @@ npm run spike:market -- --write
 写操作只在 `status === 1`（Trading）的市场可用；`redeem` 在 `Resolved`/`Voided` 后可用，
 作废市场需要按 `outcomeIdx` 分别赎回。
 
+## 6. P0 合约部署记录（Shannon 50312）
+
+| 项 | 值 |
+|---|---|
+| CommonGroundCampaign | `0xe53e5d8945d6c4b771f6eb9add448967d35a8ee9` |
+| 部署交易 | `0x7d48e9422af49ec9bbb64d13a0f995664f9a8c82ce955a83da1caaa5d3068e68` |
+| 绑定市场 marketId | `0x0000000000000000000000000000000000000000000000000000000000019af8` |
+| 绑定 pool | `0x5397cd6DE6e87eB7f2D9B72191B5eFfb16E53D62` |
+| 实际 gas | ~52M（本地估算 3.4M，Somnia 状态创建约 15x 更贵） |
+
+部署命令必须带 `--gas-estimate-multiplier 2000`，否则默认估算会变成 gas limit 导致
+status 0 失败。`executor`/`verifier`/`payee` 当前都指向部署钱包
+`0xB675d67909185f5E983EC51b2AED14667eA31b33`（demo 简化，正式版要分开）。
+
 ### G0-C（执行器）— 待实现
 
 固定检查模板 + 隔离 runner + 独立验收，与链上托管解耦。

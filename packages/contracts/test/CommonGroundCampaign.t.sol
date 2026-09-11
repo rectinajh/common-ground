@@ -33,7 +33,7 @@ contract CommonGroundCampaignTest is Test {
         collateral = new MockCollateral();
         module = new MockModule(outcomeToken, collateral, YES_ID, NO_ID);
         market = new MockMarket();
-        pool = new MockPool();
+        pool = new MockPool(outcomeToken, collateral, YES_ID, NO_ID);
 
         campaign = new CommonGroundCampaign(
             address(module),
