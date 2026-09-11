@@ -14,7 +14,7 @@ export const WS_RPC = "wss://api.infra.testnet.somnia.network/ws";
 export const STT_FAUCET_URL = "https://testnet.somnia.network/";
 
 // Latest live P0 demo campaign. Swap for a fresh one when re-deploying.
-export const DEMO_CAMPAIGN = "0xb8d6153b6ca057c3b0f594493058a05f335d3198";
+export const DEMO_CAMPAIGN = "0x5dcfe02bc151a8cbf77d2b069e55c6286561dea1";
 export const HANDLER_ADDRESS = "0xd5dae8eed198aca44f34974c4a2afd45a1d43e37";
 export const EXPLORER = "https://shannon-explorer.somnia.network";
 

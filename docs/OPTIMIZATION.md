@@ -11,7 +11,7 @@
 | P0-3 合约验证 | 🟡 待提交 | 扁平化源码已生成：`docs/verification/*.flattened.sol` |
 | P0-4 一键资助 + 进度 | ✅ 完成 | `App.tsx` 逐步 approve → mintSet → setOperator → deposit |
 | P0-5 交付证据 | ✅ 评委故事页 | 无钱包时间线 + 6 笔真实 tx 链接 + 合约浏览器入口；任务卡仍展示 hash/URI |
-| P0-6 demo 视频 | 🔴 未录 | 提交必选项。脚本已改成「不连钱包」：`docs/DEPLOYMENT.md` §8 / `docs/PITCH.md` |
+| P0-6 demo 视频 | ✅ 已录 | `docs/demo/COMMON-GROUND-demo.mp4` · 2:31 · 1080p · 英文旁白 |
 | P1-1 Reactivity 自动触发 | ✅ 完成（多计划） | 多计划 registry handler `0xd5dae8ee…43e37`，订阅 `18392207` / `18392213`（已上链） |
 | P1-2 实时事件流 | ✅ 完成 | 前端 `wss://api.infra.testnet.somnia.network/ws` 订阅 newHeads，失败回退轮询 |
 | P1-3 Faucet 引导 | ✅ 完成 | 一键领 tUSDC + STT 官方 faucet 链接 |

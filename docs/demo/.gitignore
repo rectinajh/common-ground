@@ -1,0 +1,6 @@
+node_modules/
+raw/
+audio/*.aiff
+audio/*.wav
+frames/
+package-lock.json

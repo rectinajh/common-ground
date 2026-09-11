@@ -10,32 +10,32 @@ export const DEMO_STEPS: DemoStep[] = [
   {
     title: { en: "Deploy the plan", zh: "部署计划" },
     detail: { en: "Immutable escrow: market, executor, verifier, and deadlines frozen.", zh: "不可变托管：市场、执行者、验收者和期限一次性冻结。" },
-    tx: "0xd431002eab001709a6cbbceb49ce534371f73394c077e2ed16ff8673425cd5a9",
+    tx: "0x9f5e002ed86153e16f682d98e74270d495eaf2c8c79ecf060eb8e9e56be66a01",
   },
   {
     title: { en: "Mint a complete set", zh: "铸造完整份额" },
     detail: { en: "150 tUSDC → 150 Up + 150 Down via DreamDEX mintSet.", zh: "150 tUSDC 经 DreamDEX mintSet 变成 150 Up + 150 Down。" },
-    tx: "0xd2cd66550abe5befe127d1aee0553281989749e92cb3c5cdfa8aa3ca42071f0d",
+    tx: "0x5c3030368abaeb18ea5668bd8f3be626be5208cf3ead222b90e98a722c50ebcb",
   },
   {
     title: { en: "Alice funds Up", zh: "Alice 看涨出资" },
     detail: { en: "100 Up deposited into BASE_UP. She does not have to concede.", zh: "100 份 Up 进入 BASE_UP。她不必认输。" },
-    tx: "0x0ff65aaaed82455d748b863e23f25dffb8b83d6f554f3d09b57fd5865afe2848",
+    tx: "0xc50206d6a8a7310f637b55751a1a8476b995ee0b83c3f7329f0c46d4e7e06cdb",
   },
   {
     title: { en: "Bob funds Down", zh: "Bob 看跌出资" },
     detail: { en: "100 Down deposited into BASE_DOWN. Complementary shares now match.", zh: "100 份 Down 进入 BASE_DOWN。互补份额凑齐。" },
-    tx: "0x19410c46748379dced0223d4115a054e2dfd38ae45995ccbb2b81fb210fa5440",
+    tx: "0x92670cbdc59d530df42c4fe2971490942597006abd03c37452da0ec3867670f1",
   },
   {
     title: { en: "Merge → 100 tUSDC budget", zh: "合并 → 100 tUSDC 预算" },
     detail: { en: "1 Up + 1 Down = 1 collateral. Base task funded before settlement.", zh: "1 Up + 1 Down = 1 抵押品。基础任务在结算前就有钱。" },
-    tx: "0x454119d783de1b77594dbb7ecdb1d67a621899e59232663cd8819f8de856ba0e",
+    tx: "0x818c6c747a7b995bd0574e6b25f6a90090b8356c966e8190bcefd90000c19180",
   },
   {
-    title: { en: "Market resolved Down", zh: "市场结算为 Down" },
-    detail: { en: "Somnia Reactivity auto-called sync. Bonus skipped — Up condition failed.", zh: "Somnia Reactivity 自动推进。Up 条件未满足，追加任务跳过。" },
-    tx: "0x232df62a9d3226aea7fbf0a83ab5fcb247b3c4ec1ebc284678138fbf817db73b",
+    title: { en: "Market voided → refund path", zh: "市场作废 → 退款路径" },
+    detail: { en: "Somnia Reactivity auto-called sync. Bonus skipped — uniform void refunds half.", zh: "Somnia Reactivity 自动推进。市场作废，追加任务跳过，一半退回退款池。" },
+    tx: "0x6555af95969a94b4c830f8dbcb736929204f8b73c63da6d09828412a14755cbe",
   },
 ];
 

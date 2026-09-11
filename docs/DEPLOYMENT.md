@@ -16,7 +16,7 @@ Contracts: `packages/contracts`
 | Contract | Address | Tx | Role |
 |---|---|---|---|
 | `CommonGroundCampaign` (forge deploy, gas-gotcha verified) | `0xe53e5d8945d6c4b771f6eb9add448967d35a8ee9` | `0x7d48e9422af49ec9bbb64d13a0f995664f9a8c82ce955a83da1caaa5d3068e68` | early deploy |
-| **`CommonGroundCampaign` (final end-to-end demo)** | **`0xb8d6153b6ca057c3b0f594493058a05f335d3198`** | `0xd431002eab001709a6cbbceb49ce534371f73394c077e2ed16ff8673425cd5a9` | one-plan escrow + task lifecycle |
+| **`CommonGroundCampaign` (final end-to-end demo)** | **`0x5dcfe02bc151a8cbf77d2b069e55c6286561dea1`** | `0x9f5e002ed86153e16f682d98e74270d495eaf2c8c79ecf060eb8e9e56be66a01` | one-plan escrow + task lifecycle |
 | `CommonGroundFactory` | `0x63bFD49DbB74A1f731229258fF76495E3b2d8F90` | `0x13e9f6b5a515c95c8e6cbd0fffbf1efa442586a60b05702fe0974cc1dc2621bf` | permissionless plan factory + registry |
 | `CommonGroundReactivityHandler` (multi-plan) | `0xd5dae8eed198aca44f34974c4a2afd45a1d43e37` | `0x6df577fc227a92e14e471e1f4a106465262a7f0932da9d4e89c59074f24444d0` | on-chain settlement trigger |
 
@@ -28,35 +28,37 @@ The handler is a `market => campaign` registry subscribed to the campaign market
 
 | Event | Subscription id | Tx |
 |---|---|---|
-| Register campaign → market | `0x8e4ebb3735e3b1a8f79098a707f97c4352a811d98a6a0a48db603584a4b664a4` | (registration tx) |
-| `Resolved` | `18392207` | `0xe6618f9be487ca27ef9ec5d50310363d315a179c09f09c7ca520774b7de93b35` |
-| `Voided` | `18392213` | `0x1768418e74f866092b7fd2683184784e91c19ef60c546fd86a5840381c316335` |
+| Register campaign → market | — | `0x168cab945723e3fa739e565a698c60d674e39e330cccf32ebcf4d8f314cb8600` |
+| `Resolved` | `18413600` | `0x062efbd1ddffe675fb08858507a25eabbcc1cba9faeb3b7086e84137038b0e36` |
+| `Voided` | `18413616` | `0x2766a2378da4e3531d41d8d660b729b73e09ebd218ad6ee8d09140f0dfb70c52` |
 
 ## 3. End-to-end demo (final campaign)
 
-Bound market id: `0x0000000000000000000000000000000000000000000000000000000000019b12`
-(expiry `1789095600`, resolved **Down**)
+Bound market: "Will agent Alpha-Z close session #35 with a higher NAV?"
+market id `0x000000000000000000000000000000000000000000000000000000000001a726`
+(expiry `1789157797`, resolved **Voided** — uniform `50/50` payout)
 
 | Step | Tx |
 |---|---|
-| Deploy campaign | `0xd431002eab001709a6cbbceb49ce534371f73394c077e2ed16ff8673425cd5a9` |
-| Mint complete set (150 tUSDC) | `0xd2cd66550abe5befe127d1aee0553281989749e92cb3c5cdfa8aa3ca42071f0d` |
-| setOperator (ERC-6909) | `0x115f23d2d402aa869bee99e08b8ee3f077ff88fedbb5a4e7986be9cb71c8466f` |
-| Deposit 100 Up (BASE_UP) | `0x0ff65aaaed82455d748b863e23f25dffb8b83d6f554f3d09b57fd5865afe2848` |
-| Deposit 100 Down (BASE_DOWN) | `0x19410c46748379dced0223d4115a054e2dfd38ae45995ccbb2b81fb210fa5440` |
-| Deposit 50 Up (BONUS) | `0xec7e86985ff48bd471b0d210e0d63cd3b74220764f1c6014ef813b4c9b6f53cd` |
-| `activateBase` (merge) | `0x454119d783de1b77594dbb7ecdb1d67a621899e59232663cd8819f8de856ba0e` |
-| `syncMarketAndBonus` (settlement) | `0x232df62a9d3226aea7fbf0a83ab5fcb247b3c4ec1ebc284678138fbf817db73b` |
+| Deploy campaign | `0x9f5e002ed86153e16f682d98e74270d495eaf2c8c79ecf060eb8e9e56be66a01` |
+| Mint complete set (150 tUSDC) | `0x5c3030368abaeb18ea5668bd8f3be626be5208cf3ead222b90e98a722c50ebcb` |
+| setOperator (ERC-6909) | `0x0cca46d3cb6879eb3bdabce6e755faeb7fd920748b80dbd71e03df9eb71e9a12` |
+| Deposit 100 Up (BASE_UP) | `0xc50206d6a8a7310f637b55751a1a8476b995ee0b83c3f7329f0c46d4e7e06cdb` |
+| Deposit 100 Down (BASE_DOWN) | `0x92670cbdc59d530df42c4fe2971490942597006abd03c37452da0ec3867670f1` |
+| Deposit 50 Up (BONUS) | `0xa738d10535028650bf8c30140c6963a7692503501715a82ef8fdc9c0928813a6` |
+| `activateBase` (merge) | `0x818c6c747a7b995bd0574e6b25f6a90090b8356c966e8190bcefd90000c19180` |
+| Reactivity `onEvent` → `syncMarketAndBonus` (void) | `0x6555af95969a94b4c830f8dbcb736929204f8b73c63da6d09828412a14755cbe` |
 
 ### Final on-chain state
 
 | Field | Value | Meaning |
 |---|---|---|
-| `planState` | `1` | BaseActive |
+| `planState` | `2` | Finished |
 | `baseBudget` | `100000000` (100 tUSDC) | deterministic base budget from merged complementary shares |
 | `baseTask.state` | `1` | Ready |
-| `bonusBudget` | `0` | Up lost → bonus correctly not funded |
+| `bonusBudget` | `0` | void → bonus correctly not funded |
 | `bonusTask.state` | `7` | Skipped |
+| `refundBonus` | `25000000` (25 tUSDC) | uniform void refunds half of the 50 tUSDC bonus |
 
 ## 4. Somnia Reactivity auto-trigger
 
@@ -92,9 +94,10 @@ the factory suite (deploy + register + functional campaign), and the Reactivity 
 registry suite (advance / idempotent / unregistered-emitter / market-mismatch /
 precompile-auth / owner-auth / rollback).
 
-> Note: the live demo campaign `0xb8d6153b…3198` was deployed from an earlier contract
-> revision. The current source additionally stores the verifier's `reasonHash` in `Task`
-> and splits refunds into `refundBase` / `refundBonus` for exact per-bucket accounting.
+> Note: the final demo campaign `0x5dcfe02b…1dea1` is deployed from the **current**
+> revision — it stores the verifier's `reasonHash` in `Task` and splits refunds into
+> `refundBase` / `refundBonus` for exact per-bucket accounting. The earlier revision
+> (campaign `0xb8d6153b…3198`) predates those two changes.
 
 ## 6.1 CI
 
@@ -114,7 +117,12 @@ Flattened sources are committed under `docs/verification/`. In the Blockscout ex
 
 Files: `CommonGroundCampaign.flattened.sol`, `CommonGroundReactivityHandler.flattened.sol`.
 
-## 8. Demo video script (2:00–2:30, English)
+## 8. Demo video
+
+Recorded file: [`docs/demo/COMMON-GROUND-demo.mp4`](./demo/COMMON-GROUND-demo.mp4)
+(2:31, 1080p, English). Upload to YouTube unlisted for DoraHacks.
+
+### Script (2:00–2:30, English)
 
 Do **not** start with MetaMask. Judges will not connect a wallet.
 

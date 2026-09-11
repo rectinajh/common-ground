@@ -21,18 +21,43 @@ COMMON GROUND is a conditional public-action protocol on Somnia × DreamDEX.
 
 This creates Event Contract volume (`mintSet` of complete sets) for a use case that is not another trading UI.
 
+## Ecosystem impact (the quantified story)
+
+COMMON GROUND turns a disagreement into *multiple* Event Contract actions, not one bet.
+Every plan is structurally a volume engine for DreamDEX and a native proof-point for Somnia Reactivity:
+
+1. **One complete-set mint per plan.** To open a plan, contributors mint a full set
+   (`1 Up + 1 Down = 1 collateral`). A `100 tUSDC` base budget therefore mints
+   `200 tUSDC` of outcome tokens *up front* — before anyone even decides the market.
+2. **A conditional bonus held to settlement.** The bonus bucket keeps additional
+   outcome tokens on the book until the market resolves, so the plan contributes a
+   second, longer-lived position.
+3. **A conditional settlement trigger.** The market's `Resolved` / `Voided` event is
+   not a keeper script — it is a Somnia Reactivity precompile callback that advances
+   the plan on-chain.
+
+Worked example (our demo): `baseBudget = 100 tUSDC` → `100 Up + 100 Down` minted via
+`mintSet` (`200 tUSDC` outcome volume), `+50 tUSDC` bonus outcome tokens, then the
+market **voided** (uniform `50/50`) and Reactivity settled the plan with **zero
+off-chain keeper** — the bonus was skipped and 25 tUSDC returned to the refund pool.
+
+The unit-economics line for judges: **every COMMON GROUND plan = at least
+`2 × base + bonus` in Event Contract volume, plus one no-keeper settlement.** N plans
+built on N real markets become a repeatable public-goods demand source for DreamDEX,
+not a one-off trading UI.
+
 ## Live demo (no wallet required)
 
 https://commonground-demo.vercel.app
 
 Completed Shannon testnet run:
 
-- Campaign `0xb8d6153b6ca057c3b0f594493058a05f335d3198`
+- Campaign `0x5dcfe02bc151a8cbf77d2b069e55c6286561dea1`
 - Factory `0x63bFD49DbB74A1f731229258fF76495E3b2d8F90`
 - Reactivity handler `0xd5dae8eed198aca44f34974c4a2afd45a1d43e37`
 - `baseBudget = 100 tUSDC` from merged complementary shares
-- Market resolved **Down** → bonus correctly **Skipped**
-- Auto-trigger subscriptions `18392207` (Resolved) and `18392213` (Voided)
+- Market **voided** (uniform `50/50`) → bonus correctly **Skipped**, 25 tUSDC refunded
+- Auto-trigger subscriptions `18413600` (Resolved) and `18413616` (Voided)
 
 Full tx table: [DEPLOYMENT.md](./DEPLOYMENT.md)
 
@@ -47,7 +72,7 @@ Full tx table: [DEPLOYMENT.md](./DEPLOYMENT.md)
 1. 0:00–0:20 — Hook: “Can two people who disagree fund something together?”
 2. 0:20–0:50 — Open the live app. Show the completed run and click two explorer txs. No wallet.
 3. 0:50–1:20 — Mechanism: `1 Up + 1 Down = 1 collateral`. Base task starts before settlement.
-4. 1:20–1:50 — Settlement: market went Down, bonus skipped, Reactivity fired. Failure path is a feature.
+4. 1:20–1:50 — Settlement: market voided, bonus skipped, Reactivity fired. The void/failure path is a feature.
 5. 1:50–2:20 — Addresses + future: permissionless plans, accountable audits, more Event Contract volume.
 
 ## Future vision

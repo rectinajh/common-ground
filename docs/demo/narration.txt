@@ -1,0 +1,34 @@
+Two people disagree about the future. Can they fund something together, instead of betting against each other?
+
+[[slnc 700]]
+This is Common Ground. It is not another prediction-market terminal. It is a conditional public-action protocol, built on Somnia and DreamDEX Event Contracts.
+
+[[slnc 900]]
+Here is the live Shannon testnet app. You do not need a wallet to verify it. The completed run is already on chain.
+
+[[slnc 500]]
+Alice believed the market would go Up. Bob believed Down. Neither had to concede. They deposited complementary shares into the same plan.
+
+[[slnc 800]]
+DreamDEX minted a complete set. One hundred Up, plus one hundred Down, merged into one hundred t U S D C. That is the equation. One Up plus one Down equals one unit of collateral.
+
+[[slnc 500]]
+The base task is funded before settlement. A real maintenance check can start while the market is still open. Direction does not have to agree.
+
+[[slnc 800]]
+They also reserved a bonus. It would release only if the market resolved Up.
+
+[[slnc 400]]
+The market resolved Down. The bonus was correctly skipped. The base budget stayed locked. Failure is an explicit path, not an embarrassment.
+
+[[slnc 500]]
+Settlement did not wait for a bot. A Somnia Reactivity handler subscribed to Resolved and Voided, and advanced the campaign on chain. No keeper. No cron job.
+
+[[slnc 800]]
+Every transaction is linked from this page. Campaign. Factory. Reactivity handler. You can open the merge, and the settlement, in the explorer right now.
+
+[[slnc 500]]
+This creates Event Contract volume for work the ecosystem actually needs. Audits. Research. Incident response. Not another P and L board.
+
+[[slnc 800]]
+Common Ground. You don't have to agree on the future, to make something happen.

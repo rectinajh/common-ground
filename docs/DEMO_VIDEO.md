@@ -79,5 +79,5 @@ for the evidence beats.
 
 **On-screen**
 - GitHub: `github.com/rectinajh/common-ground`.
-- Contract addresses: campaign `0xb8d6153b…3198`, factory `0x63bFD49D…8F90`.
+- Contract addresses: campaign `0x5dcfe02b…1dea1`, factory `0x63bFD49D…8F90`.
 - `COMMON GROUND — built for Somnia × DreamDEX`.
