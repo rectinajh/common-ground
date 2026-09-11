@@ -189,6 +189,17 @@ function App() {
     setMsgType(type);
   };
 
+  const friendlyError = (e: unknown): string => {
+    const m = e instanceof Error ? e.message : String(e);
+    if (/user rejected|user denied|denied message signature|4001/i.test(m)) return "已在钱包中取消";
+    if (/insufficient funds|gas required exceeds allowance/i.test(m)) return "余额不足：需要更多 STT 作为 gas";
+    if (/nonce too low|nonce too high/i.test(m)) return "交易序号冲突，请稍候重试";
+    if (/tradingnotactive/i.test(m)) return "市场已不在交易阶段，无法执行该操作";
+    if (/faucetcapexceeded/i.test(m)) return "测试币水龙头已达本次上限";
+    if (/wrong network|chain mismatch/i.test(m)) return "请切换到 Somnia Testnet（chainId 50312）";
+    return m.length > 160 ? `${m.slice(0, 160)}…` : m;
+  };
+
   const connect = async () => {
     const eth = (window as any).ethereum;
     if (!eth) return notify("请安装 MetaMask", "err");
@@ -225,7 +236,7 @@ function App() {
       setSignature(sig as string);
       notify("签名验证成功", "ok");
     } catch (e) {
-      notify(`签名已取消: ${(e as Error).message}`, "err");
+      notify(`签名失败: ${friendlyError(e)}`, "err");
     }
   };
 
@@ -255,7 +266,7 @@ function App() {
       await refreshBalance();
       notify("已领取 10,000 tUSDC", "ok");
     } catch (e) {
-      notify(`领取失败: ${(e as Error).message}`, "err");
+      notify(`领取失败: ${friendlyError(e)}`, "err");
     } finally {
       setBusy(null);
       setStep(null);
@@ -296,7 +307,7 @@ function App() {
       await refreshBalance();
       reload();
     } catch (e) {
-      notify(`失败: ${(e as Error).message}`, "err");
+      notify(`失败: ${friendlyError(e)}`, "err");
     } finally {
       setBusy(null);
       setTimeout(() => setStep(null), 1500);
@@ -313,7 +324,7 @@ function App() {
       notify("基础预算已合并锁定", "ok");
       reload();
     } catch (e) {
-      notify(`失败: ${(e as Error).message}`, "err");
+      notify(`失败: ${friendlyError(e)}`, "err");
     } finally {
       setBusy(null);
       setStep(null);
@@ -369,6 +380,7 @@ function App() {
           <code>1 Up + 1 Down = 1 抵押品</code>。两个判断相反的人，把对赌变成共同出资：
           配对部分无条件资助基础任务，市场结果只决定要不要追加执行。
         </p>
+        {loading && !view && <p className="loadingHint">正在读取链上状态…</p>}
         {view && <FlowVisual baseBudget={view.baseBudget} />}
       </section>
 

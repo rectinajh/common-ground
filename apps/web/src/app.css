@@ -93,6 +93,10 @@ body {
   padding: 2px 7px;
   font-size: 13px;
 }
+.loadingHint {
+  margin: 14px 0 0; font: 12px ui-monospace, monospace; color: var(--dim);
+  animation: pulse 1.6s ease-in-out infinite;
+}
 
 /* ----------------------------------------------------------- flow visual */
 .flow {
