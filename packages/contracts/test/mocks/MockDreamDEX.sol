@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {CommonGroundCampaign} from "../../src/CommonGroundCampaign.sol";
+
 contract MockOutcomeToken {
     mapping(address => mapping(uint256 => uint256)) public balanceOf;
     mapping(address => mapping(address => bool)) public isOperator;
@@ -151,5 +153,39 @@ contract MockPool {
         outcomeToken.burn(msg.sender, yesId, amount);
         outcomeToken.burn(msg.sender, noId, amount);
         collateral.mint(msg.sender, amount);
+    }
+}
+
+/// @notice ERC-6909 that re-enters `deposit` on transferFrom, to exercise the
+///         campaign's nonReentrant guard.
+contract ReentrantOutcomeToken {
+    CommonGroundCampaign public target;
+    mapping(address => mapping(uint256 => uint256)) public balanceOf;
+    mapping(address => mapping(address => bool)) public isOperator;
+
+    function setTarget(CommonGroundCampaign t) external {
+        target = t;
+    }
+
+    function setOperator(address spender, bool approved) external returns (bool) {
+        isOperator[msg.sender][spender] = approved;
+        return true;
+    }
+
+    function transfer(address receiver, uint256 id, uint256 amount) external returns (bool) {
+        balanceOf[msg.sender][id] -= amount;
+        balanceOf[receiver][id] += amount;
+        return true;
+    }
+
+    function transferFrom(
+        address,
+        address,
+        uint256,
+        uint256
+    ) external returns (bool) {
+        // Re-enter deposit; the nonReentrant guard must revert.
+        target.deposit(CommonGroundCampaign.Bucket.BaseUp, 1);
+        return true;
     }
 }

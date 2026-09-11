@@ -1,19 +1,17 @@
 # COMMON GROUND
 
-> 不必相信同一个未来，也能共同完成一件事。
+> 1 Up + 1 Down = 1 抵押品。两个判断相反的人，可以不赌输赢，而是把对赌变成共同出资。
 >
-> Turn conditional market rights into funded, authorized, verifiable public action.
+> Turn opposite market positions into funded, authorized, verifiable public action.
 
 COMMON GROUND 是一个条件式公共行动产品。参与者将同一 DreamDEX 事件市场的 Up/Down 结果份额交付给一个共同计划：互补份额合并成基础预算，在市场结算前启动真实任务；独立的追加份额只在市场正式结算后，且满足既定方向、预算和交付前提时，才能启动追加任务。
 
 ## 项目状态
 
-- 阶段：产品设计与集成验证阶段，尚未实现
-- 集成状态：DreamDEX 读路径（G0）与份额铸造/合并（G0-A）已通过，结算赎回（G0-B）待结算市场
+- 阶段：测试网可运行原型，已跑通完整 live demo
+- 集成状态：DreamDEX 读路径（G0）、份额铸造/合并（G0-A）、结算赎回（G0-B）均已通过
 - Live 前端：<https://common-ground-beige-gamma.vercel.app>
-- 目标：Somnia × DreamDEX Event Contracts 可运行测试网原型
 - 产品名：COMMON GROUND
-- 能力名：Common Trigger 是自动触发能力，不是独立产品
 
 ## 原则
 
@@ -76,13 +74,15 @@ COMMON GROUND 用不可变合约代替中间人。参与者交付的互补事件
 
 COMMON GROUND 不把 Event Contracts 当作单纯的下注工具，而是把它作为**条件式公共行动的资金与授权原语**。
 
-## 首版场景
+## 一个具体场景（为什么有人会用）
 
-首个真实服务是 **Community Maintenance Check**：
+一个协议要花 5 万美金做安全审计，但光靠捐款很难凑齐。它发起一个事件市场：看多的人和看空的人各自交付仓位。
 
-- 基础任务：对预先固定的 repository commit、测试集和运行镜像执行基础回归与权限配置检查；
-- 追加任务：对同一代码版本执行另一组预先固定的边界、异常处理或配置检查；
-- 交付物：机器可读 JSON、测试日志、人类可读报告和可复现 manifest。
+- **无条件部分**：配对后的 Up + Down 合并成确定性资金，无论代币涨跌都支付审计，谁都不用先承认对方对；
+- **有条件部分**：只有当代币突破某个里程碑，才追加一次更深的渗透测试或漏洞赏金加成；
+- **交付责任**：执行者交付物（报告 + 可复现 manifest）上链留证，验收者确认后才付款，失败则按规则退款。
+
+首版已用 **Community Maintenance Check** 跑通：基础任务做固定 commit 的回归与权限检查，追加任务做边界/异常检查。
 
 ## 核心机制
 

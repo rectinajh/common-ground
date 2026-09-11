@@ -8,7 +8,8 @@ import {
     MockCollateral,
     MockModule,
     MockMarket,
-    MockPool
+    MockPool,
+    ReentrantOutcomeToken
 } from "./mocks/MockDreamDEX.sol";
 
 contract CommonGroundCampaignTest is Test {
@@ -199,5 +200,75 @@ contract CommonGroundCampaignTest is Test {
         campaign.failFunding();
 
         assertEq(uint8(campaign.planState()), 3); // FundingFailed
+    }
+
+    // ----------------------------------------------------------- edge / security
+
+    function testDepositZeroAmountReverts() public {
+        vm.prank(alice);
+        vm.expectRevert(bytes("zero amount"));
+        campaign.deposit(CommonGroundCampaign.Bucket.BaseUp, 0);
+    }
+
+    function testDepositAfterActivationReverts() public {
+        fund();
+        outcomeToken.mint(alice, YES_ID, 1);
+        vm.prank(alice);
+        vm.expectRevert(bytes("not open"));
+        campaign.deposit(CommonGroundCampaign.Bucket.Bonus, 1);
+    }
+
+    function testWithdrawInsufficientReverts() public {
+        outcomeToken.mint(alice, YES_ID, 5);
+        vm.prank(alice);
+        outcomeToken.setOperator(address(campaign), true);
+        vm.prank(alice);
+        campaign.deposit(CommonGroundCampaign.Bucket.BaseUp, 5);
+        vm.prank(alice);
+        vm.expectRevert(bytes("insufficient"));
+        campaign.withdraw(CommonGroundCampaign.Bucket.BaseUp, 6);
+    }
+
+    function testUnequalSidesMergeMin() public {
+        outcomeToken.mint(alice, YES_ID, 150);
+        outcomeToken.mint(bob, NO_ID, 100);
+        vm.prank(alice);
+        outcomeToken.setOperator(address(campaign), true);
+        vm.prank(bob);
+        outcomeToken.setOperator(address(campaign), true);
+        vm.prank(alice);
+        campaign.deposit(CommonGroundCampaign.Bucket.BaseUp, 150);
+        vm.prank(bob);
+        campaign.deposit(CommonGroundCampaign.Bucket.BaseDown, 100);
+
+        campaign.activateBase();
+        assertEq(campaign.baseBudget(), 100);
+        assertEq(campaign.mergedAmount(), 100);
+    }
+
+    function testReentrancyGuard() public {
+        ReentrantOutcomeToken rt = new ReentrantOutcomeToken();
+        CommonGroundCampaign c2 = new CommonGroundCampaign(
+            address(module),
+            address(pool),
+            address(market),
+            address(rt),
+            address(collateral),
+            YES_ID,
+            NO_ID,
+            0,
+            1,
+            bytes32(0),
+            bytes32("m1"),
+            executor,
+            verifier,
+            payee,
+            32
+        );
+        rt.setTarget(c2);
+
+        vm.prank(alice);
+        vm.expectRevert(bytes("reentrant"));
+        c2.deposit(CommonGroundCampaign.Bucket.BaseUp, 1);
     }
 }

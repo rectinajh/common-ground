@@ -29,6 +29,8 @@ const TASK_LABELS = ["等待", "就绪", "执行中", "已交付", "已验收", 
 
 const fmt = (v: bigint) => (Number(v) / 1e6).toFixed(2);
 const fmtEth = (v: bigint) => (Number(v) / 1e18).toFixed(4);
+const shortHash = (h: string) => (h.length > 18 ? `${h.slice(0, 18)}…` : h);
+const ZERO_HASH = `0x${"0".repeat(64)}`;
 
 type TaskStruct = {
   state: number;
@@ -320,6 +322,15 @@ function App() {
           </div>
           <h2>基础任务 · 无论如何都做</h2>
           <p>对固定 commit 执行基础回归与权限检查。资金来自互补份额合并，不依赖市场方向。</p>
+          {view && view.baseTask.evidenceHash !== ZERO_HASH && (
+            <div className="evidence">
+              <span>交付证据</span>
+              <code title={view.baseTask.evidenceUri}>
+                {shortHash(view.baseTask.evidenceHash)}
+                {view.baseTask.evidenceUri ? ` · ${view.baseTask.evidenceUri.slice(0, 40)}` : ""}
+              </code>
+            </div>
+          )}
           <div className="cardFoot">
             <span>预算 <b>{view ? fmt(view.baseTask.budget) : "—"} tUSDC</b></span>
             <button className="btn" disabled={!ready || !!busy} onClick={() => fund("base")}>
@@ -335,6 +346,15 @@ function App() {
           </div>
           <h2>追加任务 · 结算后才触发</h2>
           <p>仅当市场结果为 Up 时，才对同一 commit 追加边界 / 异常检查。条件不满足即跳过，资金不浪费。</p>
+          {view && view.bonusTask.evidenceHash !== ZERO_HASH && (
+            <div className="evidence">
+              <span>交付证据</span>
+              <code title={view.bonusTask.evidenceUri}>
+                {shortHash(view.bonusTask.evidenceHash)}
+                {view.bonusTask.evidenceUri ? ` · ${view.bonusTask.evidenceUri.slice(0, 40)}` : ""}
+              </code>
+            </div>
+          )}
           <div className="cardFoot">
             <span>预算 <b>{view ? fmt(view.bonusTask.budget) : "—"} tUSDC</b></span>
             <button className="btn amber" disabled={!ready || !!busy} onClick={() => fund("bonus")}>
