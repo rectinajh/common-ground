@@ -127,14 +127,6 @@ function App() {
     const [addr] = await eth.request({ method: "eth_requestAccounts" });
     setAccount(addr as Address);
 
-    // Sign a message to prove wallet ownership.
-    const signText = `Sign in to COMMON GROUND\n${addr}\n${Date.now()}`;
-    const sig = await eth.request({
-      method: "personal_sign",
-      params: [signText, addr],
-    });
-    setSignature(sig as string);
-
     // Load balances: STT (gas) + tUSDC (collateral).
     const [stt, tUsdc] = await Promise.all([
       publicClient.getBalance({ address: addr as Address }),
@@ -147,6 +139,21 @@ function App() {
     ]);
     setBalances({ stt, tUsdc });
     setMsg(null);
+  };
+
+  // Separate from connect: signing is opt-in, so a plain connect is not a
+  // phishing-shaped "connect then immediately sign" pattern.
+  const signIn = async () => {
+    if (!account) return;
+    const eth = (window as any).ethereum;
+    try {
+      const signText = `Sign in to COMMON GROUND\n${account}\n${Date.now()}`;
+      const sig = await eth.request({ method: "personal_sign", params: [signText, account] });
+      setSignature(sig as string);
+      setMsg("签名验证成功");
+    } catch (e) {
+      setMsg(`签名已取消: ${(e as Error).message}`);
+    }
   };
 
   const fundBase = async () => {
@@ -255,18 +262,24 @@ function App() {
           <p className="tag">不必相信同一个未来，也能共同完成一件事</p>
         </div>
         <div className="wallet">
-          <button className="btn ghost" onClick={connect}>
-            {account
-              ? `${account.slice(0, 6)}…${account.slice(-4)}${signature ? " ✓" : " …"}`
-              : "连接钱包"}
-          </button>
+          {!account ? (
+            <button className="btn ghost" onClick={connect}>连接钱包</button>
+          ) : (
+            <div className="walletRow">
+              <span className="addr">{account.slice(0, 6)}…{account.slice(-4)}</span>
+              {signature ? (
+                <span className="ok">✓ 已验证</span>
+              ) : (
+                <button className="btn" onClick={signIn}>签名验证</button>
+              )}
+            </div>
+          )}
           {account && balances && (
             <div className="bal">
               <span>{fmtEth(balances.stt)} STT</span>
               <span>{fmt(balances.tUsdc)} tUSDC</span>
             </div>
           )}
-          {account && !signature && <span className="hint">请在钱包里签名确认</span>}
         </div>
       </header>
 
