@@ -112,11 +112,11 @@ function App() {
   const connect = async () => {
     const eth = (window as any).ethereum;
     if (!eth) return setMsg("请安装 MetaMask");
-    await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xC4A0" }] }).catch(
+    await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xC488" }] }).catch(
       () => eth.request({
         method: "wallet_addEthereumChain",
         params: [{
-          chainId: "0xC4A0",
+          chainId: "0xC488",
           chainName: "Somnia Testnet",
           rpcUrls: ["https://dream-rpc.somnia.network"],
           nativeCurrency: { name: "STT", symbol: "STT", decimals: 18 },
