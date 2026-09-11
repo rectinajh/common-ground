@@ -118,6 +118,33 @@ npm run spike:market -- --write
 status 0 失败。`executor`/`verifier`/`payee` 当前都指向部署钱包
 `0xB675d67909185f5E983EC51b2AED14667eA31b33`（demo 简化，正式版要分开）。
 
+## 7. 端到端 live demo（Stage 1 已通过）
+
+`packages/market/scripts/demo-endtoend.ts` 一键跑通核心机制（一个钱包模拟 Up/Down 双方）：
+
+```text
+discover 市场 → 部署 campaign → mintSet(150) → setOperator →
+deposit 100 Up + 100 Down + 50 Up(bonus) → activateBase(merge)
+```
+
+实测结果：
+
+| 项 | 值 |
+|---|---|
+| campaign | `0xb8d6153b6ca057c3b0f594493058a05f335d3198` |
+| 绑定市场 | `0x0000000000000000000000000000000000000000000000000000000000019b12` |
+| 合并结果 | **baseBudget = 100 tUSDC（`100000000`）** |
+| 结论 | 互补 Up/Down 份额成功合并成确定性预算，核心机制成立 |
+
+踩坑记录：
+
+- Somnia EIP-1559 需要固定 `maxFeePerGas=60gwei`（否则 "gas price < basefee" 拒绝）；
+- 多个连续写要显式管 nonce（否则 "nonce too low"）；
+- 必须选「即将结算但仍 ≥5min」的市场，否则 mint 时 `TradingNotActive`（市场已滚到下个窗口）。
+
+Stage 2（等待结算 → `syncMarketAndBonus` → 赎回 bonus）在窗口到期后运行
+`node dist/scripts/demo-endtoend.js 2` 完成。
+
 ### G0-C（执行器）— 待实现
 
 固定检查模板 + 隔离 runner + 独立验收，与链上托管解耦。

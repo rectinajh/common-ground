@@ -22,17 +22,19 @@ async function main(): Promise<void> {
   const exchange = createExchange();
   try {
     const markets = await exchange.loadMarkets();
-    const trading = Object.values(markets)
-      .map((m) => ({ unified: m, binary: describe(m) }))
-      .filter((x): x is { unified: UnifiedMarket; binary: BinaryMarket } =>
-        Boolean(x.binary) && x.binary.status === "Trading",
-      );
+    let target: BinaryMarket | null = null;
+    for (const m of Object.values(markets)) {
+      const b = describe(m);
+      if (b && b.status === "Trading") {
+        target = b;
+        break;
+      }
+    }
 
-    if (trading.length === 0) {
+    if (target === null) {
       throw new Error("no Trading binary market found");
     }
 
-    const target = trading[0]!.binary;
     const onchain = await exchange.client.getMarketOnchain(target.marketId);
 
     const moduleAddr = SOMNIA_TESTNET_ADDRESSES.binaryModule;

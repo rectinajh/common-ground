@@ -27,3 +27,4 @@ broadcast/
 artifacts/
 .coverage/
 coverage/
+.demo-state.json
