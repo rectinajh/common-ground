@@ -68,6 +68,36 @@ body {
 .mini:disabled { opacity: 0.5; cursor: not-allowed; }
 .mini.link { text-decoration: none; color: var(--accent); border-color: rgba(46, 242, 196, 0.28); }
 
+/* ------------------------------------------------------------------ onboard */
+.onboard {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 20px; padding: 12px 16px; border: 1px solid var(--border);
+  border-radius: 14px; background: var(--panel); font-size: 13px; color: var(--dim);
+}
+.step { display: inline-flex; align-items: center; gap: 7px; }
+.step b {
+  width: 20px; height: 20px; border-radius: 50%; display: inline-flex;
+  align-items: center; justify-content: center; font: 700 11px ui-monospace, monospace;
+  color: #06251f; background: var(--accent);
+}
+.arrow { opacity: 0.5; font-weight: 700; }
+
+/* -------------------------------------------------------------------- plans */
+.plans { margin-top: 20px; }
+.plansHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.plansHead .k { font-size: 12px; color: var(--dim); }
+.planSelect { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.planChip {
+  border: 1px solid var(--border); background: var(--panel2); color: var(--dim);
+  border-radius: 999px; padding: 6px 12px; font: 600 12px ui-monospace, monospace;
+  cursor: pointer; transition: all 0.15s ease;
+}
+.planChip:hover { border-color: rgba(255, 255, 255, 0.28); color: var(--text); }
+.planChip.active {
+  color: #06251f; background: linear-gradient(120deg, var(--accent), #7dd3fc);
+  border-color: transparent;
+}
+
 /* ------------------------------------------------------------------- hero */
 .hero { padding: 56px 0 8px; }
 .hero h1 {
@@ -177,6 +207,7 @@ body {
 .cardFoot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .cardFoot > span { font-size: 13px; color: var(--dim); }
 .cardFoot b { color: var(--text); font-family: ui-monospace, monospace; }
+.footBtns { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* ----------------------------------------------------------------- buttons */
 .btn {
@@ -186,6 +217,8 @@ body {
 }
 .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 26px -10px rgba(46, 242, 196, 0.8); }
 .btn.amber { color: #2a1503; background: linear-gradient(120deg, var(--accent2), #ffd9a8); }
+.btn.upBtn { color: #062515; background: linear-gradient(120deg, var(--up), #86efac); }
+.btn.downBtn { color: #30070c; background: linear-gradient(120deg, var(--down), #fda4af); }
 .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
 .btn.ghost:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.25); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }

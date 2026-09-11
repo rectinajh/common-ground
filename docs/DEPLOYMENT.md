@@ -85,11 +85,16 @@ settlement events. Requirement: the subscription owner keeps ≥ 32 STT.
 
 ## 6. Tests
 
-`forge test`: **22/22 passing** — base happy path, base reject refund, bonus win/loss/void,
-task expiry, funding fail, plus security/edge cases (reentrancy, zero-amount, withdraw
-insufficient, unequal-merge-min, late-deposit), the factory suite (deploy + register +
-functional campaign), and the Reactivity handler registry suite (advance / idempotent /
-unregistered-emitter / market-mismatch / precompile-auth / owner-auth / rollback).
+`forge test`: **23/23 passing** — base happy path, base reject refund, bonus win/loss/void,
+task expiry, funding fail, exact refund (base/bonus pools never cross), plus security/edge
+cases (reentrancy, zero-amount, withdraw insufficient, unequal-merge-min, late-deposit),
+the factory suite (deploy + register + functional campaign), and the Reactivity handler
+registry suite (advance / idempotent / unregistered-emitter / market-mismatch /
+precompile-auth / owner-auth / rollback).
+
+> Note: the live demo campaign `0xb8d6153b…3198` was deployed from an earlier contract
+> revision. The current source additionally stores the verifier's `reasonHash` in `Task`
+> and splits refunds into `refundBase` / `refundBonus` for exact per-bucket accounting.
 
 ## 6.1 CI
 

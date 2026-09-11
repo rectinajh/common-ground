@@ -168,8 +168,8 @@ CAMPAIGN_ADDRESS=0x... node --env-file-if-exists=.env dist/scripts/subscribe-rea
 - Max 32 contributor addresses
 - Zero platform fee in this version
 - No yield guarantee and no compensation for losing the market direction
-- Refunds are currently proportional-by-points (exact per-share accounting is a next
-  milestone)
+- Refunds are split exactly per bucket: matched base shares settle against `refundBase`,
+  bonus shares against `refundBonus` — the two pools never cross
 - 6-decimal testnet collateral is hardcoded; mainnet 18-decimal config is a next milestone
 
 ## License

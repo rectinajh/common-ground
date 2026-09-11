@@ -16,6 +16,9 @@ export const STT_FAUCET_URL = "https://testnet.somnia.network/";
 // Latest live P0 demo campaign. Swap for a fresh one when re-deploying.
 export const DEMO_CAMPAIGN = "0xb8d6153b6ca057c3b0f594493058a05f335d3198";
 
+// Permissionless plan factory + registry (live).
+export const FACTORY_ADDRESS = "0x63bFD49DbB74A1f731229258fF76495E3b2d8F90";
+
 // Collateral decimals. Shannon testnet tUSDC is 6; mainnet USDso is 18.
 export const COLLATERAL_DECIMALS = 6;
 export const UNIT = 10n ** BigInt(COLLATERAL_DECIMALS);
@@ -39,10 +42,23 @@ export const campaignAbi = parseAbi([
   "function baseUpTokenId() view returns (uint256)",
   "function baseDownTokenId() view returns (uint256)",
   "function bonusTokenId() view returns (uint256)",
+  "function bonusOutcomeIdx() view returns (uint8)",
+  "function operatorId() view returns (uint32)",
+  "function venueId() view returns (bytes32)",
+  "function marketId() view returns (bytes32)",
+  "function module() view returns (address)",
   "function getTask(uint256) view returns ((uint8 state, bytes32 evidenceHash, string evidenceUri, bytes32 reasonHash, uint256 startDeadline, uint256 decisionDeadline, uint256 budget))",
   "function deposit(uint8 bucket, uint256 amount)",
   "function activateBase()",
   "function syncMarketAndBonus()",
+]);
+
+export const factoryAbi = parseAbi([
+  "function campaignCount() view returns (uint256)",
+  "function getCampaign(uint256) view returns (address)",
+  "function isCampaign(address) view returns (bool)",
+  "function createPlan(address module,address pool,address market,address outcomeToken,address collateralToken,uint256 baseUpTokenId,uint256 baseDownTokenId,uint8 bonusOutcomeIdx,uint32 operatorId,bytes32 venueId,bytes32 marketId,address executor,address verifier,address executorPayee,uint256 maxContributors) returns (address)",
+  "event PlanCreated(address indexed campaign, address indexed creator, bytes32 indexed marketId)",
 ]);
 
 export const outcomeTokenAbi = parseAbi([

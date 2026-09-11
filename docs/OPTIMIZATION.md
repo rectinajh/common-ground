@@ -15,10 +15,11 @@
 | P1-1 Reactivity 自动触发 | ✅ 完成（多计划） | 多计划 registry handler `0xd5dae8ee…43e37`，订阅 `18392207` / `18392213`（已上链） |
 | P1-2 实时事件流 | ✅ 完成 | 前端 `wss://api.infra.testnet.somnia.network/ws` 订阅 newHeads，失败回退轮询 |
 | P1-3 Faucet 引导 | ✅ 完成 | 一键领 tUSDC + STT 官方 faucet 链接 |
-| P1-4 安全/边界测试 | ✅ 完成 | `forge test` 22/22 通过（含重入、精度、越界、并发、factory、handler registry） |
+| P1-4 安全/边界测试 | ✅ 完成 | `forge test` 23/23 通过（含重入、精度、越界、并发、factory、handler registry、精确退款） |
 | P1-5 商业用例 | ✅ 完成 | README 首屏协议安全审计场景 |
 | P1-6 错误/加载态 | ✅ 完成 | 分类 toast（info/ok/err）+ 逐步状态 + LIVE 指示 |
-| P2-1/P2-3 计划工厂 + 注册表 | 🟡 合约完成 | `CommonGroundFactory` `0x63bFD49D…8F90`（已上链）；前端「创建计划/列表」待接 |
+| P2-1/P2-3 计划工厂 + 注册表 | ✅ 完成 | `CommonGroundFactory` `0x63bFD49D…8F90`（已上链）；前端计划列表 + 创建计划 + 选立场资助 |
+| P2-2 精确退款 | ✅ 完成 | 拆分为 `refundBase` / `refundBonus`，基础与追加退款互不交叉（23/23 含专项测试） |
 | P2-5 CI/CD | ✅ 完成 | `.github/workflows/ci.yml`：forge test + market/worker/web build |
 | P2-6 主网精度配置 | ✅ 完成（配置化） | 前端 `COLLATERAL_DECIMALS` 可切换 6/18；合约按原始 uint 无精度假设 |
 

@@ -25,6 +25,7 @@ contract CommonGroundCampaignTest is Test {
 
     address internal alice = address(0xA11CE);
     address internal bob = address(0xB0B);
+    address internal charlie = address(0xC4A4);
     address internal executor = address(0xE5EC);
     address internal verifier = address(0x5E1F);
     address internal payee = address(0x9A4E);
@@ -104,11 +105,47 @@ contract CommonGroundCampaignTest is Test {
         vm.prank(verifier);
         campaign.decideEvidence(0, false, bytes32(0));
 
-        assertEq(campaign.refundPool(), 100);
+        assertEq(campaign.refundBase(), 100);
         uint256 aliceBefore = collateral.balanceOf(alice);
         vm.prank(alice);
         campaign.claimRefund();
         assertEq(collateral.balanceOf(alice), aliceBefore + 50);
+    }
+
+    function testRefundPoolsDoNotCross() public {
+        outcomeToken.mint(alice, YES_ID, 100);
+        outcomeToken.mint(bob, NO_ID, 100);
+        outcomeToken.mint(charlie, YES_ID, 50);
+        vm.prank(alice);
+        outcomeToken.setOperator(address(campaign), true);
+        vm.prank(bob);
+        outcomeToken.setOperator(address(campaign), true);
+        vm.prank(charlie);
+        outcomeToken.setOperator(address(campaign), true);
+        vm.prank(alice);
+        campaign.deposit(CommonGroundCampaign.Bucket.BaseUp, 100);
+        vm.prank(bob);
+        campaign.deposit(CommonGroundCampaign.Bucket.BaseDown, 100);
+        vm.prank(charlie);
+        campaign.deposit(CommonGroundCampaign.Bucket.Bonus, 50);
+        campaign.activateBase();
+
+        uint256 startAt = block.timestamp;
+        vm.prank(executor);
+        campaign.startTask(0, startAt + 10, startAt + 100);
+        vm.prank(executor);
+        campaign.submitEvidence(0, keccak256("evidence"), "ipfs://x");
+        vm.prank(verifier);
+        campaign.decideEvidence(0, false, bytes32("reject"));
+
+        market.setVoided();
+        campaign.syncMarketAndBonus();
+
+        // Bonus-only contributor (charlie) gets exactly the bonus pool, none of base.
+        uint256 charlieBefore = collateral.balanceOf(charlie);
+        vm.prank(charlie);
+        campaign.claimRefund();
+        assertEq(collateral.balanceOf(charlie), charlieBefore + 25);
     }
 
     // ------------------------------------------------------------------ helpers
@@ -163,7 +200,7 @@ contract CommonGroundCampaignTest is Test {
         assertEq(campaign.bonusBudget(), 0);
         (CommonGroundCampaign.TaskState state,,,,,,) = campaign.bonusTask();
         assertEq(uint8(state), 7); // Skipped
-        assertEq(campaign.refundPool(), 25); // 50 / 2
+        assertEq(campaign.refundBonus(), 25); // 50 / 2
     }
 
     // --------------------------------------------------------------- task expiry
@@ -177,7 +214,7 @@ contract CommonGroundCampaignTest is Test {
         vm.warp(startAt + 200);
         campaign.expireTask(0);
 
-        assertEq(campaign.refundPool(), 100);
+        assertEq(campaign.refundBase(), 100);
         (CommonGroundCampaign.TaskState state,,,,,,) = campaign.baseTask();
         assertEq(uint8(state), 6); // Expired
     }

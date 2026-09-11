@@ -88,7 +88,8 @@ contract CommonGroundCampaign {
     uint256 public mergedAmount; // matched shares merged into the base budget
     uint256 public baseBudget; // deterministic collateral for the base task
     uint256 public bonusBudget; // collateral for the conditional bonus task
-    uint256 public refundPool; // collateral pending proportional refund
+    uint256 public refundBase; // collateral owed to matched base-share holders
+    uint256 public refundBonus; // collateral owed to bonus-share holders
 
     Task public baseTask;
     Task public bonusTask;
@@ -276,7 +277,7 @@ contract CommonGroundCampaign {
             // Uniform void: redeem the bonus side at half and put it in the refund pool.
             IOutcomeToken6909(outcomeToken).setOperator(module, true);
             IBinaryMarketsModule(module).redeem(operatorId, venueId, marketId, bonusOutcomeIdx, totalBonus);
-            refundPool += totalBonus / 2;
+            refundBonus += totalBonus / 2;
             bonusBudget = 0;
             bonusTask.state = TaskState.Skipped;
             planState = PlanState.Finished;
@@ -351,7 +352,8 @@ contract CommonGroundCampaign {
         t.reasonHash = reasonHash;
         emit Decision(index, accepted, reasonHash);
         if (!accepted) {
-            refundPool += t.budget;
+            if (index == 0) refundBase += t.budget;
+            else refundBonus += t.budget;
             t.budget = 0;
         }
     }
@@ -373,7 +375,8 @@ contract CommonGroundCampaign {
         require(t.state == TaskState.Ready || t.state == TaskState.Running, "not expirable");
         require(t.decisionDeadline > 0 && t.decisionDeadline < block.timestamp, "not expired");
         t.state = TaskState.Expired;
-        refundPool += t.budget;
+        if (index == 0) refundBase += t.budget;
+        else refundBonus += t.budget;
         t.budget = 0;
     }
 
@@ -383,18 +386,15 @@ contract CommonGroundCampaign {
     }
 
     // ------------------------------------------------------------------ refund
-    /// @notice Claim proportional refund. Points are raw share counts across all buckets.
+    /// @notice Claim exact refund. Base collateral is split between matched
+    ///         Up/Down shares (pro-rata to the merged amount); bonus collateral is
+    ///         split pro-rata across bonus shares. The two pools never cross.
     function claimRefund() external nonReentrant {
         require(isContributor[msg.sender], "not contributor");
-        uint256 points = _pointsOf(msg.sender);
-        uint256 totalPoints = totalBaseUp + totalBaseDown + totalBonus;
-        require(points > 0 && totalPoints > 0 && refundPool > 0, "nothing");
-
-        uint256 entitlement = (refundPool * points) / totalPoints;
+        uint256 entitlement = _entitlementOf(msg.sender);
         uint256 already = _refundClaims[msg.sender];
         require(entitlement > already, "nothing new");
         uint256 amount = entitlement - already;
-        refundPool -= amount;
         _refundClaims[msg.sender] = entitlement;
         require(IERC20Like(collateralToken).transfer(msg.sender, amount), "refund failed");
         emit Refunded(msg.sender, amount);
@@ -402,9 +402,23 @@ contract CommonGroundCampaign {
 
     mapping(address => uint256) private _refundClaims;
 
-    function _pointsOf(address account) internal view returns (uint256) {
+    /// @dev Exact entitlement: matched base shares earn base collateral, bonus
+    ///      shares earn bonus collateral. Unmatched (surplus) base shares earn
+    ///      nothing here — they are returned as shares before activation.
+    function _entitlementOf(address account) internal view returns (uint256) {
         Position memory p = positions[account];
-        return p.baseUp + p.baseDown + p.bonus;
+        uint256 base = 0;
+        if (refundBase > 0 && mergedAmount > 0 && totalBaseUp > 0 && totalBaseDown > 0) {
+            uint256 upMatched = (p.baseUp * mergedAmount) / totalBaseUp;
+            uint256 downMatched = (p.baseDown * mergedAmount) / totalBaseDown;
+            base = ((upMatched + downMatched) * refundBase) / (2 * mergedAmount);
+        }
+
+        uint256 bonus = 0;
+        if (refundBonus > 0 && totalBonus > 0) {
+            bonus = (p.bonus * refundBonus) / totalBonus;
+        }
+        return base + bonus;
     }
 
     // ----------------------------------------------------------------- helpers
