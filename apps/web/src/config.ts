@@ -7,6 +7,12 @@ export const CHAIN = defineChain({
   rpcUrls: { default: { http: ["https://dream-rpc.somnia.network"] } },
 });
 
+// WebSocket RPC for live (real-time) state updates; falls back to polling.
+export const WS_RPC = "wss://api.infra.testnet.somnia.network/ws";
+
+// Official Somnia testnet faucet (STT, the native gas token).
+export const STT_FAUCET_URL = "https://testnet.somnia.network/";
+
 // Latest live P0 demo campaign. Swap for a fresh one when re-deploying.
 export const DEMO_CAMPAIGN = "0xb8d6153b6ca057c3b0f594493058a05f335d3198";
 
@@ -44,6 +50,7 @@ export const outcomeTokenAbi = parseAbi([
 export const collateralAbi = parseAbi([
   "function approve(address spender, uint256 amount) returns (bool)",
   "function balanceOf(address account) view returns (uint256)",
+  "function faucet(uint256 amount)",
 ]);
 
 export const poolAbi = parseAbi([

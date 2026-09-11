@@ -20,7 +20,8 @@ CommonGroundCampaign（每计划独立合约）
 固定 DreamDEX 适配逻辑 / 官方合约
   查询市场 / 合并完整份额 / 赎回结果权益
 
-链上事件 -> Indexer / Trigger Worker -> 受限推进交易
+链上事件 -> Indexer / Trigger Worker ─┐
+        -> Somnia Reactivity handler ─┴─> 受限推进交易
                          |
                          v
                  独立执行沙箱
@@ -255,7 +256,7 @@ The PRD defines T01–T34. Critical areas:
 
 ### P1
 
-- Somnia on-chain Reactivity;
+- Somnia on-chain Reactivity ✅ (`CommonGroundReactivityHandler`, live subscription);
 - multiple executors and verifier sets;
 - more task templates;
 - authorized automatic issue creation;
@@ -306,8 +307,10 @@ Status: LOCKED — reviewed 2026-09-11. P0 implementation follows this section.
    ```
 
 6. **Scope is narrowed.** One plan, one market, one base task, one conditional bonus.
-   No multi-plan UI, no leaderboards, no generic arbitration, no Somnia on-chain
-   Reactivity. Executor and verifier are fixed addresses in the manifest.
+   No multi-plan UI, no leaderboards, no generic arbitration. Executor and verifier are
+   fixed addresses in the manifest. On-chain advancement has two equivalent triggers:
+   the permissionless keeper worker **and** a Somnia Reactivity handler subscribed to the
+   market's `Resolved` / `Voided` events (see `CommonGroundReactivityHandler`).
 
 ### 16.2 Integration risks (from review)
 
@@ -341,7 +344,9 @@ contributor ──ERC-6909 setOperator→transferFrom──▶ campaign buckets
                           (market settles on-chain)
                                                      ▼
                                      campaign.syncMarketAndBonus()
-                                                     │
+                                             ▲
+                        (Reactivity precompile → handler.onEvent) ──┘
+                                             │
                             win → campaign.redeem(BONUS) → bonus budget
                             loss/void/expire → refund snapshots
 ```

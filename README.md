@@ -62,6 +62,10 @@ COMMON GROUND 用不可变合约代替中间人。参与者交付的互补事件
 4. **失败和作废有明确回收路径。**  
    未募满、交付失败、市场作废、追加方向失败等情况分别处理。原始份额或剩余资产按预先约定的规则退回贡献者，不依赖组织者的善意。
 
+5. **结算推进不需要“信得过的人”。**  
+   市场一旦结算，Somnia Reactivity 预编译会调用已订阅的 handler 合约，自动执行
+   `syncMarketAndBonus()`，不依赖 off-chain keeper、cron 或任何脚本。
+
 ## 核心思路
 
 我们不必对未来方向达成一致，但可以提前约定：
@@ -85,6 +89,12 @@ COMMON GROUND 不把 Event Contracts 当作单纯的下注工具，而是把它�
 首版已用 **Community Maintenance Check** 跑通：基础任务做固定 commit 的回归与权限检查，追加任务做边界/异常检查。
 
 ## 核心机制
+
+### 链上自动触发（Somnia Reactivity）
+
+`CommonGroundReactivityHandler` 订阅市场的 `Resolved` / `Voided` 事件。结算发生时，Somnia
+Reactivity 预编译自动调用 `onEvent`，handler 校验 emitter 后幂等地推进 campaign。这意味着
+“市场结果 → 现实行动”的最后一公里也是链上、无托管、无单点的。
 
 ### 三桶记账
 
@@ -117,6 +127,8 @@ docs/                   架构、部署、证据及开发说明
 
 - 产品需求文档：[COMMON_GROUND_PRD_v1.0.md](./docs/COMMON_GROUND_PRD_v1.0.md)
 - 技术文档：[docs/TECHNICAL.md](./docs/TECHNICAL.md)
+- 集成与部署证据：[docs/INTEGRATION.md](./docs/INTEGRATION.md) · [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
+- 优化计划与状态：[docs/OPTIMIZATION.md](./docs/OPTIMIZATION.md)
 
 ## 快速开始
 

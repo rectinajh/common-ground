@@ -39,14 +39,34 @@ body {
 .topbar { display: flex; align-items: center; justify-content: space-between; }
 .brand { display: flex; align-items: center; gap: 10px; letter-spacing: 0.16em; font-weight: 600; font-size: 14px; }
 .mark { color: var(--accent); font-size: 20px; text-shadow: 0 0 18px rgba(46, 242, 196, 0.7); }
+.live {
+  display: inline-flex; align-items: center; gap: 6px; margin-left: 6px;
+  font: 600 10px/1 ui-monospace, monospace; letter-spacing: 0.12em; color: var(--dim);
+  padding: 4px 8px; border: 1px solid var(--border); border-radius: 999px;
+}
+.live i {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--dim);
+}
+.live.on { color: var(--accent); border-color: rgba(46, 242, 196, 0.35); }
+.live.on i { background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 .wallet { display: flex; align-items: center; gap: 10px; }
 .addr { font: 13px ui-monospace, "SF Mono", Menlo, monospace; color: var(--dim); }
 .ok { font-size: 12px; color: var(--accent); }
 .balanceLine {
-  display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;
+  display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 8px;
   font: 12px ui-monospace, monospace; color: var(--dim);
 }
 .dot { opacity: 0.5; }
+.spacer { flex: 1; }
+.mini {
+  border: 1px solid var(--border); background: var(--panel2); color: var(--text);
+  border-radius: 8px; padding: 4px 9px; font: 600 11.5px -apple-system, sans-serif;
+  cursor: pointer; transition: border-color 0.15s ease, transform 0.1s ease;
+}
+.mini:hover:not(:disabled) { border-color: rgba(46, 242, 196, 0.5); transform: translateY(-1px); }
+.mini:disabled { opacity: 0.5; cursor: not-allowed; }
+.mini.link { text-decoration: none; color: var(--accent); border-color: rgba(46, 242, 196, 0.28); }
 
 /* ------------------------------------------------------------------- hero */
 .hero { padding: 56px 0 8px; }
@@ -189,7 +209,11 @@ body {
   background: rgba(12, 18, 26, 0.95); border: 1px solid var(--border);
   color: var(--text); box-shadow: 0 18px 50px -20px rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(8px);
+  animation: toastIn 0.18s ease;
 }
+.toast.ok { border-color: rgba(46, 242, 196, 0.45); color: #c9fff0; }
+.toast.err { border-color: rgba(251, 113, 133, 0.55); color: #ffd6dc; }
+@keyframes toastIn { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
 @media (max-width: 760px) {
   .stats { grid-template-columns: repeat(2, 1fr); }

@@ -5,13 +5,16 @@ import {
   custom,
   http,
   parseAbi,
+  webSocket,
   type Address,
 } from "viem";
 import {
   CHAIN,
   DEMO_CAMPAIGN,
+  STT_FAUCET_URL,
   T_USDC,
   UNIT,
+  WS_RPC,
   campaignAbi,
   collateralAbi,
   outcomeTokenAbi,
@@ -59,10 +62,18 @@ type CampaignView = {
   settled: boolean;
 };
 
-function useCampaign(campaign: Address): CampaignView | null {
+function useCampaign(campaign: Address): {
+  view: CampaignView | null;
+  live: boolean;
+  loading: boolean;
+  reload: () => void;
+} {
   const [view, setView] = useState<CampaignView | null>(null);
+  const [live, setLive] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    try {
     const read = (functionName: string, args?: readonly unknown[]) =>
       publicClient.readContract({ address: campaign, abi: campaignAbi, functionName, args } as never);
 
@@ -99,15 +110,41 @@ function useCampaign(campaign: Address): CampaignView | null {
       outcomeToken: outcomeToken as Address,
       settled: Boolean(resolved) || Boolean(voided),
     });
+    } catch {
+      // Keep the last known view; the next poll will retry.
+    } finally {
+      setLoading(false);
+    }
   }, [campaign]);
 
   useEffect(() => {
     load();
     const id = setInterval(load, 10_000);
-    return () => clearInterval(id);
+    let unsub: (() => void) | undefined;
+    let last = 0;
+    try {
+      const wsClient = createPublicClient({ chain: CHAIN, transport: webSocket(WS_RPC) });
+      unsub = wsClient.watchBlockNumber({
+        onBlockNumber: () => {
+          setLive(true);
+          const now = Date.now();
+          if (now - last > 3000) {
+            last = now;
+            load();
+          }
+        },
+        onError: () => setLive(false),
+      });
+    } catch {
+      setLive(false);
+    }
+    return () => {
+      clearInterval(id);
+      unsub?.();
+    };
   }, [load]);
 
-  return view;
+  return { view, live, loading, reload: load };
 }
 
 function FlowVisual({ baseBudget }: { baseBudget: bigint }) {
@@ -134,7 +171,8 @@ function App() {
   const [busy, setBusy] = useState<string | null>(null);
   const [step, setStep] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const view = useCampaign(campaign);
+  const [msgType, setMsgType] = useState<"info" | "ok" | "err">("info");
+  const { view, live, loading, reload } = useCampaign(campaign);
 
   const walletClient = useMemo(
     () =>
@@ -146,9 +184,14 @@ function App() {
 
   const FEES = { maxFeePerGas: 60_000_000_000n, maxPriorityFeePerGas: 2_000_000_000n };
 
+  const notify = (text: string, type: "info" | "ok" | "err" = "info") => {
+    setMsg(text);
+    setMsgType(type);
+  };
+
   const connect = async () => {
     const eth = (window as any).ethereum;
-    if (!eth) return setMsg("请安装 MetaMask");
+    if (!eth) return notify("请安装 MetaMask", "err");
     await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xC488" }] }).catch(
       () => eth.request({
         method: "wallet_addEthereumChain",
@@ -180,9 +223,9 @@ function App() {
         params: [`Sign in to COMMON GROUND\n${account}\n${Date.now()}`, account],
       });
       setSignature(sig as string);
-      setMsg("签名验证成功");
+      notify("签名验证成功", "ok");
     } catch (e) {
-      setMsg(`签名已取消: ${(e as Error).message}`);
+      notify(`签名已取消: ${(e as Error).message}`, "err");
     }
   };
 
@@ -193,6 +236,30 @@ function App() {
       publicClient.readContract({ address: T_USDC, abi: collateralAbi, functionName: "balanceOf", args: [account] }),
     ]);
     setBalances({ stt, tUsdc });
+  };
+
+  const faucet = async () => {
+    if (!walletClient || !account) return;
+    setBusy("faucet");
+    setStep("领取测试币…");
+    setMsg(null);
+    try {
+      const hash = await walletClient.writeContract({
+        address: T_USDC,
+        abi: collateralAbi,
+        functionName: "faucet",
+        args: [10000n * UNIT],
+        ...FEES,
+      });
+      await publicClient.waitForTransactionReceipt({ hash });
+      await refreshBalance();
+      notify("已领取 10,000 tUSDC", "ok");
+    } catch (e) {
+      notify(`领取失败: ${(e as Error).message}`, "err");
+    } finally {
+      setBusy(null);
+      setStep(null);
+    }
   };
 
   const fund = async (kind: "base" | "bonus") => {
@@ -225,10 +292,11 @@ function App() {
       }
 
       setStep("完成");
-      setMsg(kind === "base" ? "已资助基础任务 100 tUSDC" : "已资助追加任务 50 tUSDC");
+      notify(kind === "base" ? "已资助基础任务 100 tUSDC" : "已资助追加任务 50 tUSDC", "ok");
       await refreshBalance();
+      reload();
     } catch (e) {
-      setMsg(`失败: ${(e as Error).message}`);
+      notify(`失败: ${(e as Error).message}`, "err");
     } finally {
       setBusy(null);
       setTimeout(() => setStep(null), 1500);
@@ -242,9 +310,10 @@ function App() {
     try {
       const h = await walletClient.writeContract({ address: campaign, abi: campaignAbi, functionName: "activateBase", ...FEES });
       await publicClient.waitForTransactionReceipt({ hash: h });
-      setMsg("基础预算已合并锁定");
+      notify("基础预算已合并锁定", "ok");
+      reload();
     } catch (e) {
-      setMsg(`失败: ${(e as Error).message}`);
+      notify(`失败: ${(e as Error).message}`, "err");
     } finally {
       setBusy(null);
       setStep(null);
@@ -261,6 +330,9 @@ function App() {
         <div className="brand">
           <span className="mark">◎</span>
           <span>COMMON GROUND</span>
+          <span className={`live ${live ? "on" : ""}`} title={live ? "实时事件流已连接" : "轮询中（实时流未连接）"}>
+            <i />{live ? "LIVE" : "POLL"}
+          </span>
         </div>
         <div className="wallet">
           {!account ? (
@@ -279,6 +351,11 @@ function App() {
           <span>{fmtEth(balances.stt)} STT</span>
           <span className="dot">·</span>
           <span>{fmt(balances.tUsdc)} tUSDC</span>
+          <span className="spacer" />
+          <button className="mini" disabled={!!busy} onClick={faucet}>
+            {busy === "faucet" ? step ?? "领取中…" : "领测试 tUSDC"}
+          </button>
+          <a className="mini link" href={STT_FAUCET_URL} target="_blank" rel="noreferrer">领 STT ↗</a>
         </div>
       )}
 
@@ -377,7 +454,7 @@ function App() {
         </div>
       </section>
 
-      {msg && <div className="toast">{msg}</div>}
+      {msg && <div className={`toast ${msgType}`}>{msg}</div>}
     </div>
   );
 }

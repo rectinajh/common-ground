@@ -173,3 +173,39 @@ npm run spike:market          # 只读验证：发现市场 + 读链上状态
 
 开发时先 `npm run build --workspace @common-ground/market`，脚本输出到
 `packages/market/dist/`。运行脚本是纯 Node，避免 `tsx` 在本机沙箱的 IPC 限制。
+
+## 8. Somnia Reactivity 集成（自动触发，已上链）
+
+结算推进不再只依赖 off-chain worker。`CommonGroundReactivityHandler` 继承 Somnia 的
+handler 约定（仅 precompile `0x0100` 可调用 `onEvent`），订阅市场 `Resolved` / `Voided`
+事件后，结算发生时 precompile 会自动调用 handler → `campaign.syncMarketAndBonus()`。
+
+```text
+DreamDEX BinaryMarket 结算
+        │ Resolved(uint32,uint256[]) / Voided()
+        ▼
+Somnia Reactivity precompile (0x0100)
+        │ onEvent(emitter, topics, data)
+        ▼
+CommonGroundReactivityHandler (校验 emitter + 幂等)
+        │ syncMarketAndBonus()
+        ▼
+CommonGroundCampaign（bonus 自动判定 / 跳过 / 退款）
+```
+
+关键点：
+
+- handler 只绑定一个 campaign，且只能调用 `syncMarketAndBonus`，无任意调用。
+- 双事件订阅分别覆盖 `Resolved` 与 `Voided`；`consumed` 标志保证只推进一次。
+- 订阅方需持有 ≥ 32 STT（当前钱包 ~48.4 STT，满足）。
+- 前端 `wss://api.infra.testnet.somnia.network/ws` 走 `eth_subscribe newHeads` 做实时刷新，
+  失败时自动回退到 10s 轮询。
+
+复现：
+
+```bash
+cd packages/market && npm run build
+CAMPAIGN_ADDRESS=0x... node --env-file-if-exists=.env dist/scripts/subscribe-reactivity.js
+```
+
+线上证据见 `docs/DEPLOYMENT.md` 第 6 节。
