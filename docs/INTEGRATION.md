@@ -75,17 +75,34 @@ await exchange.trader.redeem({ marketId, amount, outcomeIdx }); // 结算后赎�
   `pool`、`collateral`、`outcomeToken` 全部正确返回。
 - 结论：市场发现与链上状态读取打通，地址与官方文档一致。
 
-### G0-A / G0-B（写路径）— 代码就绪，待有资金的测试钱包
+### G0-A（份额铸造 / 合并）— 已通过
 
-`packages/market/scripts/g0-spike.ts` 已实现 `faucet → mintSet → 余额校验 → burnSet`
-往返。运行需要：
+`faucet → mintSet → 余额校验 → burnSet` 往返在 Shannon 测试网跑通，余额完全对上：
 
-1. 一个专用测试钱包（不要用主网私钥）；
-2. 钱包里有 STT 作为 gas；
-3. `DREAMDEX_PRIVATE_KEY=0x... npm run spike:market -- --write`。
+| 步骤 | 结果 |
+|---|---|
+| 测试钱包 | `0xB675d67909185f5E983EC51b2AED14667eA31b33` |
+| faucet | mint 10 tUSDC，余额 `500000000 → 10500000000` |
+| mintSet | 100 tUSDC → 100 Up + 100 Down（各 `100000000`） |
+| burnSet | 完整份额烧回，余额回到 `10500000000` |
 
-完整份额 `mintSet`/`burnSet` 只能对 `status === 1`（Trading）的市场调用；
-`redeem` 在 `Resolved`/`Voided` 后可用，作废市场需要按 `outcomeIdx` 分别赎回。
+结论：ERC-6909 结果份额铸造与合并路径打通；`mintSet`/`burnSet` 是合约 `mergeCompleteSet`
+的等价原语，G0-A 与合并路径已验证。
+
+### G0-B（结算后赎回）— 待一个结算市场
+
+`redeem` 需要等一个市场结算（win/loss/void 三种路径），当前只能在一个窗口结束后验证。
+合约侧逻辑已实现（`syncMarketAndBonus`），待结算窗口出现后补上链上证据。
+
+复现命令（已支持 `.env` 自动加载）：
+
+```bash
+cp packages/market/.env.example packages/market/.env  # 填入私钥
+npm run spike:market -- --write
+```
+
+写操作只在 `status === 1`（Trading）的市场可用；`redeem` 在 `Resolved`/`Voided` 后可用，
+作废市场需要按 `outcomeIdx` 分别赎回。
 
 ### G0-C（执行器）— 待实现
 

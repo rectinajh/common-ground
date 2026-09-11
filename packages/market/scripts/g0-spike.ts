@@ -114,7 +114,8 @@ async function main(): Promise<void> {
 
     const faucetAmount = 10_000n * unit;
     log(`requesting faucet ${faucetAmount.toString()} collateral…`);
-    await exchange.trader.faucet({ amount: faucetAmount });
+    const faucetTx = await exchange.trader.faucet({ amount: faucetAmount });
+    log(`faucet tx=${faucetTx.hash}`);
 
     const afterFaucet = await exchange.client.getErc20Balance(
       onchain.collateral,
@@ -124,7 +125,8 @@ async function main(): Promise<void> {
 
     const setAmount = 100n * unit;
     log(`minting a complete set (${setAmount.toString()} collateral)…`);
-    await exchange.trader.mintSet({ pool: onchain.pool, amount: setAmount });
+    const mintTx = await exchange.trader.mintSet({ pool: onchain.pool, amount: setAmount });
+    log(`mintSet tx=${mintTx.hash}`);
 
     const yesBal = await exchange.client.getOutcomeBalance({
       outcomeToken: onchain.outcomeToken,
@@ -141,7 +143,8 @@ async function main(): Promise<void> {
     );
 
     log("burning the complete set back to collateral…");
-    await exchange.trader.burnSet({ pool: onchain.pool, amount: setAmount });
+    const burnTx = await exchange.trader.burnSet({ pool: onchain.pool, amount: setAmount });
+    log(`burnSet tx=${burnTx.hash}`);
 
     const finalCollateral = await exchange.client.getErc20Balance(
       onchain.collateral,

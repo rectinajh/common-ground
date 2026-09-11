@@ -12,7 +12,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "spike:market": "npm run spike --workspace @common-ground/market",
+    "spike:market": "npm run spike --workspace @common-ground/market --",
     "typecheck": "tsc --noEmit -p packages/market/tsconfig.json"
   },
   "devDependencies": {
