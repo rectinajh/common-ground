@@ -9,6 +9,7 @@ import {
 import {
   CHAIN,
   DEMO_CAMPAIGN,
+  T_USDC,
   UNIT,
   campaignAbi,
   collateralAbi,
@@ -36,6 +37,7 @@ type CampaignView = {
 };
 
 const fmt = (v: bigint) => (Number(v) / 1e6).toFixed(2);
+const fmtEth = (v: bigint) => (Number(v) / 1e18).toFixed(4);
 
 function useCampaign(campaign: Address): CampaignView | null {
   const [view, setView] = useState<CampaignView | null>(null);
@@ -93,6 +95,8 @@ function useCampaign(campaign: Address): CampaignView | null {
 function App() {
   const [campaign, setCampaign] = useState<Address>(DEMO_CAMPAIGN as Address);
   const [account, setAccount] = useState<Address | null>(null);
+  const [signature, setSignature] = useState<string | null>(null);
+  const [balances, setBalances] = useState<{ stt: bigint; tUsdc: bigint } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const view = useCampaign(campaign);
@@ -122,6 +126,27 @@ function App() {
     );
     const [addr] = await eth.request({ method: "eth_requestAccounts" });
     setAccount(addr as Address);
+
+    // Sign a message to prove wallet ownership.
+    const signText = `Sign in to COMMON GROUND\n${addr}\n${Date.now()}`;
+    const sig = await eth.request({
+      method: "personal_sign",
+      params: [signText, addr],
+    });
+    setSignature(sig as string);
+
+    // Load balances: STT (gas) + tUSDC (collateral).
+    const [stt, tUsdc] = await Promise.all([
+      publicClient.getBalance({ address: addr as Address }),
+      publicClient.readContract({
+        address: T_USDC,
+        abi: collateralAbi,
+        functionName: "balanceOf",
+        args: [addr as Address],
+      }),
+    ]);
+    setBalances({ stt, tUsdc });
+    setMsg(null);
   };
 
   const fundBase = async () => {
@@ -229,9 +254,20 @@ function App() {
           <h1>COMMON GROUND</h1>
           <p className="tag">不必相信同一个未来，也能共同完成一件事</p>
         </div>
-        <button className="btn ghost" onClick={connect}>
-          {account ? `${account.slice(0, 6)}…${account.slice(-4)}` : "连接钱包"}
-        </button>
+        <div className="wallet">
+          <button className="btn ghost" onClick={connect}>
+            {account
+              ? `${account.slice(0, 6)}…${account.slice(-4)}${signature ? " ✓" : " …"}`
+              : "连接钱包"}
+          </button>
+          {account && balances && (
+            <div className="bal">
+              <span>{fmtEth(balances.stt)} STT</span>
+              <span>{fmt(balances.tUsdc)} tUSDC</span>
+            </div>
+          )}
+          {account && !signature && <span className="hint">请在钱包里签名确认</span>}
+        </div>
       </header>
 
       <section className="campaign">
@@ -257,7 +293,7 @@ function App() {
               <span>状态 <b>{TASK_LABELS[view.baseTask[0]]}</b></span>
               <span>预算 <b>{fmt(view.baseTask[5])} tUSDC</b></span>
             </div>
-            <button className="btn" disabled={!!busy || !account} onClick={fundBase}>
+            <button className="btn" disabled={!!busy || !account || !signature} onClick={fundBase}>
               {busy === "fund-base" ? "处理中…" : "资助基础任务 100 tUSDC"}
             </button>
           </article>
@@ -269,7 +305,7 @@ function App() {
               <span>状态 <b>{TASK_LABELS[view.bonusTask[0]]}</b></span>
               <span>预算 <b>{fmt(view.bonusTask[5])} tUSDC</b></span>
             </div>
-            <button className="btn" disabled={!!busy || !account} onClick={fundBonus}>
+            <button className="btn" disabled={!!busy || !account || !signature} onClick={fundBonus}>
               {busy === "fund-bonus" ? "处理中…" : "资助追加任务 50 tUSDC（押涨）"}
             </button>
           </article>
@@ -277,7 +313,7 @@ function App() {
       )}
 
       <footer className="foot">
-        <button className="btn ghost" disabled={!!busy || !account} onClick={activate}>
+        <button className="btn ghost" disabled={!!busy || !account || !signature} onClick={activate}>
           合并基础预算（activateBase）
         </button>
         {msg && <span className="msg">{msg}</span>}

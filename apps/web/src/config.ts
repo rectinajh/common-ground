@@ -12,6 +12,9 @@ export const DEMO_CAMPAIGN = "0xb8d6153b6ca057c3b0f594493058a05f335d3198";
 
 export const UNIT = 10n ** 6n;
 
+// Shannon testnet tUSDC (collateral) and STT native token.
+export const T_USDC = "0x70a86D8842FB63C4Ad2b7cdddF530eBf1BB25d8E";
+
 export const campaignAbi = parseAbi([
   "function baseBudget() view returns (uint256)",
   "function bonusBudget() view returns (uint256)",
