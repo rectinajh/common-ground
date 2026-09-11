@@ -1,171 +1,176 @@
 # COMMON GROUND
 
-> 1 Up + 1 Down = 1 抵押品。两个判断相反的人，可以不赌输赢，而是把对赌变成共同出资。
->
-> Turn opposite market positions into funded, authorized, verifiable public action.
+> **1 Up + 1 Down = 1 collateral.** Two people who disagree about the future don't have
+> to bet against each other — they jointly fund real action.
 
-COMMON GROUND 是一个条件式公共行动产品。参与者将同一 DreamDEX 事件市场的 Up/Down 结果份额交付给一个共同计划：互补份额合并成基础预算，在市场结算前启动真实任务；独立的追加份额只在市场正式结算后，且满足既定方向、预算和交付前提时，才能启动追加任务。
+COMMON GROUND is a **conditional public-action protocol** built on **Somnia × DreamDEX
+Event Contracts**. Contributors deposit Up/Down outcome shares of the same market into a
+shared plan. Complementary shares merge into a deterministic **base budget** that funds a
+real task *before* settlement, while a separate **bonus bucket** funds a second task only
+if the market resolves the pre-agreed way.
 
-## 项目状态
+## Status
 
-- 阶段：测试网可运行原型，已跑通完整 live demo
-- 集成状态：DreamDEX 读路径（G0）、份额铸造/合并（G0-A）、结算赎回（G0-B）均已通过
-- Live 前端：<https://commonground-demo.vercel.app>
-- 产品名：COMMON GROUND
+- ✅ Testnet working prototype — full live end-to-end demo passed
+- ✅ DreamDEX integration: read (G0), mint/merge (G0-A), redeem (G0-B)
+- ✅ Somnia Reactivity auto-trigger live on-chain (no off-chain keeper)
+- ✅ 18/18 Foundry tests passing
+- 🌐 Live app: <https://commonground-demo.vercel.app>
 
-## 原则
+## Why
 
-我们不要求任何人相信一个平台、一个组织者，或一个“更聪明的管理员”。我们只要求参与者相信公开的链上规则：
+DreamDEX Event Contracts issue Up/Down outcome shares for a market over a fixed window.
+Today most products use them only as a betting terminal: deposit, wait, settle, cash out.
 
-- **代码即承诺。** 计划发布后，规则不可篡改，也不能用管理权限改变资金用途。
-- **签名即授权。** 没有钱包签名，就没有资产转移；没有共同用途，就没有合并。
-- **退出不可没收。** 在规则允许的阶段，参与者可以取回属于自己的资产，不需要经过组织者批准。
-- **公开可审计。** 每一笔贡献、合并、验收和退款都留下链上证据。
-- **市场不是裁判。** 市场结果只决定条件资源是否可用，不替你判断什么值得做。
+But an event contract is more than a lottery ticket. If Up and Down shares can be merged
+into deterministic collateral, then people who disagree about the future can **jointly
+fund something worth doing regardless of the outcome** — without either side conceding
+first.
 
-## 背景
+## A concrete scenario
 
-DreamDEX Event Contracts 提供 Up/Down 结果份额，让参与者对固定时间窗口内的市场方向做出判断。但今天的大多数产品只把它当成下注终端：用户在中心化界面上押注，等待结算，然后兑现结果。
+A protocol needs a $50k security audit but can't fund it through donations alone. It opens
+an event market, and both bulls and bears deposit positions.
 
-事件合约本身不应该只是一张彩票。它可以被组合成更基础的原语：如果 Up 和 Down 份额能够合并成确定性资产，那么对未来方向判断不同的人，就不必先达成共识，也能共同资助一件确定值得做的公共任务。
+- **Unconditional:** matched Up + Down merge into deterministic funding that pays the audit
+  no matter which way the market moves — nobody has to admit the other is right.
+- **Conditional:** only if a milestone is hit does a deeper follow-up pentest / bug-bounty
+  bonus get released.
+- **Accountable:** the executor's artifact (report + reproducible manifest) is committed
+  on-chain, a verifier confirms it, and only then is payment released. Failure refunds per
+  the pre-agreed rules.
 
-COMMON GROUND 从“不要相信人，只相信可验证的规则”出发，把事件合约变成公共行动的结算与授权基础设施。
+The first demo ran this as a **Community Maintenance Check**: base task = regression and
+permission checks on a fixed commit; bonus task = boundary / exception checks.
 
-## 解决的问题
+## Problems solved
 
-COMMON GROUND 试图拆掉三个旧问题：
+1. **Opposing views can't fund anything together.** Alice is bullish, Bob is bearish.
+   Centralized setups force one to concede or hand money to a coordinator. Here both
+   contribute complementary shares; the contract does the merge.
 
-1. **不同立场的人难以共同出资。**  
-   Alice 看涨，Bob 看跌。中心化方案会要求其中一方先放弃立场，或者把资金交给一个协调者。COMMON GROUND 允许他们同时贡献互补份额，让合约完成合并，而不是让任何一方先相信另一方。
+2. **Research, maintenance, and audit work lacks delivery accountability.** Users fear
+   providers will delete the post, change the claim, or refuse a refund when the result is
+   unfavorable. COMMON GROUND escrows funds and requires on-chain evidence plus a
+   verifier's decision before payment.
 
-2. **研究、维护和行动服务缺少交付责任。**  
-   用户愿意为固定范围的检查或研究付费，但担心结果不利时，服务商删帖、改口、拒绝退款。没有锁定担保和明确验收，交付责任只是一句口头承诺。
+3. **Market outcomes never become real-world action.** Settlement usually ends at "won or
+   lost." COMMON GROUND compiles the outcome into a concrete next step: release the bonus,
+   or refund and move on.
 
-3. **市场结果没有变成现实世界行动。**  
-   结算通常只是“赢了或输了”，随后一切结束。市场结果没有被编译成下一步公共任务、资金释放或交付行为。
+## How it works
 
-COMMON GROUND 明确不做收益承诺，也不把市场方向当作某项公共服务是否值得存在的判断依据。公共价值由参与者事先认可；市场只决定条件资源是否可用。
+1. **Complementary shares → deterministic base budget.** Matched Up + Down shares are
+   merged (`1 Up + 1 Down = 1 collateral`) into a budget that funds the base task regardless
+   of direction — no one has to admit the other is right.
 
-## 如何解决
+2. **Two-stage tasks.** The base task starts as soon as it's funded; the bonus task starts
+   only after settlement and only if direction, budget, delivery, and deadline conditions
+   all hold. No "maybe" — only pre-written conditions.
 
-COMMON GROUND 用不可变合约代替中间人。参与者交付的互补事件权益，被转成有资金保障、有明确授权、有交付责任的共同任务。
+3. **An immutable Plan Manifest.** Market, amounts, executor, verifier, payee, and deadlines
+   are frozen at deploy. No admin, no upgrade path, no arbitrary call that can redirect
+   funds.
 
-1. **互补份额合并为基础预算。**  
-   同一市场的 Up 和 Down 份额按计划配对并合并成确定性资产，用于在市场结算前启动基础任务。这部分资金不再依赖市场最终方向，也不需要任何参与者先承认对方是对的。
+4. **Explicit failure and refund paths.** Unfunded, voided, expired, rejected, or failed
+   tasks each have a defined recovery rule. Refunds don't depend on anyone's goodwill.
 
-2. **把行动拆成“无条件”和“有条件”两阶段。**  
-   基础任务在资金足额后即可启动；追加任务只在市场正式结算后，且方向、预算、交付和期限条件全部满足时才启动。没有模糊的“看情况”，只有预先写死的条件。
+5. **Settlement triggers on-chain, automatically.** A `CommonGroundReactivityHandler`
+   subscribes to the market's `Resolved`/`Voided` events on the Somnia Reactivity precompile.
+   On settlement the precompile calls `onEvent()` and advances the campaign with **no
+   off-chain keeper, cron, or script**.
 
-3. **用固定计划锁定授权和交付责任。**  
-   Plan Manifest 固定市场、份额、金额、执行者、验收者、截止时间和退出规则。发布后不能随意改用途、改收款人或挪用资金。
+## On-chain evidence (live testnet demo)
 
-4. **失败和作废有明确回收路径。**  
-   未募满、交付失败、市场作废、追加方向失败等情况分别处理。原始份额或剩余资产按预先约定的规则退回贡献者，不依赖组织者的善意。
+Chain: **Somnia Shannon testnet** (`chainId 50312`, hex `0xC488`) · RPC
+`https://dream-rpc.somnia.network`
 
-5. **结算推进不需要“信得过的人”。**  
-   市场一旦结算，Somnia Reactivity 预编译会调用已订阅的 handler 合约，自动执行
-   `syncMarketAndBonus()`，不依赖 off-chain keeper、cron 或任何脚本。
+### Deployed contracts
 
-## 核心思路
-
-我们不必对未来方向达成一致，但可以提前约定：
-
-1. 哪些事情无论如何都值得做；
-2. 哪些事情在特定市场结果出现后追加执行；
-3. 资金如何到位；
-4. 执行者如何交付；
-5. 失败后谁能取回剩余资产。
-
-COMMON GROUND 不把 Event Contracts 当作单纯的下注工具，而是把它作为**条件式公共行动的资金与授权原语**。
-
-## 一个具体场景（为什么有人会用）
-
-一个协议要花 5 万美金做安全审计，但光靠捐款很难凑齐。它发起一个事件市场：看多的人和看空的人各自交付仓位。
-
-- **无条件部分**：配对后的 Up + Down 合并成确定性资金，无论代币涨跌都支付审计，谁都不用先承认对方对；
-- **有条件部分**：只有当代币突破某个里程碑，才追加一次更深的渗透测试或漏洞赏金加成；
-- **交付责任**：执行者交付物（报告 + 可复现 manifest）上链留证，验收者确认后才付款，失败则按规则退款。
-
-首版已用 **Community Maintenance Check** 跑通：基础任务做固定 commit 的回归与权限检查，追加任务做边界/异常检查。
-
-## 核心机制
-
-### 链上自动触发（Somnia Reactivity）
-
-`CommonGroundReactivityHandler` 订阅市场的 `Resolved` / `Voided` 事件。结算发生时，Somnia
-Reactivity 预编译自动调用 `onEvent`，handler 校验 emitter 后幂等地推进 campaign。这意味着
-“市场结果 → 现实行动”的最后一公里也是链上、无托管、无单点的。
-
-### 三桶记账
-
-| 资金桶 | 接收资产 | 用途 |
+| Contract | Address | Role |
 |---|---|---|
-| `BASE_UP` | 指定市场 Up | 与 `BASE_DOWN` 等量配对，为基础任务筹资 |
-| `BASE_DOWN` | 指定市场 Down | 与 `BASE_UP` 等量配对，为基础任务筹资 |
-| `BONUS` | 计划指定的一个方向 | 市场正式结算后有条件资助追加任务 |
+| `CommonGroundCampaign` (final demo) | `0xb8d6153b6ca057c3b0f594493058a05f335d3198` | one-plan escrow + task lifecycle |
+| `CommonGroundReactivityHandler` | `0x47f4c7fa7176dbc9b337274fa877ac8519aa8b20` | on-chain settlement trigger |
 
-### 双阶段行动
+### End-to-end demo transactions
 
-- 基础两桶足额后，合并一次完整份额，锁定基础预算，在结算前启动任务；
-- 市场正式结算后，只有追加方向获胜、实际可用预算足额、基础任务已验收且仍在决策期限内，才启动追加任务；
-- 任何一项不满足，不临时降级任务、不借桶补缺、不把资金交给管理员自由支配。
+| Step | Tx |
+|---|---|
+| Deploy campaign | `0xd431002eab001709a6cbbceb49ce534371f73394c077e2ed16ff8673425cd5a9` |
+| Mint complete set (150 tUSDC) | `0xd2cd66550abe5befe127d1aee0553281989749e92cb3c5cdfa8aa3ca42071f0d` |
+| setOperator (ERC-6909) | `0x115f23d2d402aa869bee99e08b8ee3f077ff88fedbb5a4e7986be9cb71c8466f` |
+| Deposit 100 Up (BASE_UP) | `0x0ff65aaaed82455d748b863e23f25dffb8b83d6f554f3d09b57fd5865afe2848` |
+| Deposit 100 Down (BASE_DOWN) | `0x19410c46748379dced0223d4115a054e2dfd38ae45995ccbb2b81fb210fa5440` |
+| Deposit 50 Up (BONUS) | `0xec7e86985ff48bd471b0d210e0d63cd3b74220764f1c6014ef813b4c9b6f53cd` |
+| `activateBase` (merge) | `0x454119d783de1b77594dbb7ecdb1d67a621899e59232663cd8819f8de856ba0e` |
+| `syncMarketAndBonus` (settlement) | `0x232df62a9d3226aea7fbf0a83ab5fcb247b3c4ec1ebc284678138fbf817db73b` |
 
-## 目录结构
+### Final on-chain state
+
+- `baseBudget = 100 tUSDC` — deterministic, from merged complementary shares
+- `bonusBudget = 0`, `bonusTask = Skipped` — the market resolved **Down**, so the
+  Up-conditioned bonus was correctly not released
+
+### Reactivity auto-trigger (Somnia native)
+
+| Purpose | Address / subscription id | Tx |
+|---|---|---|
+| Handler deploy | `0x47f4c7fa7176dbc9b337274fa877ac8519aa8b20` | `0xb351dd4b4d190e205e9416df3fe35371a472574dc51a343cabdd7d60ac05d10e` |
+| Subscribe `Resolved` | id `18086415` | `0x7f0ddf0079c3ee6e0f5f5512849012da1a71f8f486b5d665dd4dfa13a0d23299` |
+| Subscribe `Voided` | id `18086423` | `0x2ba2b79c1d1ea87ed4eab8a4a3f2fd7b5bcd1a49eefde6ce1642b992c8e6c07b` |
+
+Full deployment evidence, integration gates, verification steps, and demo-video script:
+[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).
+
+## Repo layout
 
 ```text
-apps/web/               计划、贡献、证据、退出界面
-apps/worker/            索引、补读、状态推进
-apps/verifier/          验收规则与独立签名进程
-packages/contracts/     Campaign、受限官方适配、测试
-packages/market/        SDK 封装、部署与精度配置
-packages/shared/        Manifest、TaskSpec、Artifact schema
-runner/                 隔离执行与可复现测试模板
-docs/                   架构、部署、证据及开发说明
+apps/web/                plan, contribution, evidence, exit UI
+apps/worker/             permissionless keeper (fallback trigger)
+packages/contracts/      campaign, Reactivity handler, adapters, tests
+packages/market/         SDK wrappers, deploy + subscribe scripts
+docs/                    PRD, technical, integration, deployment, optimization
 ```
 
-## 文档
+## Docs
 
-- 产品需求文档：[COMMON_GROUND_PRD_v1.0.md](./docs/COMMON_GROUND_PRD_v1.0.md)
-- 技术文档：[docs/TECHNICAL.md](./docs/TECHNICAL.md)
-- 集成与部署证据：[docs/INTEGRATION.md](./docs/INTEGRATION.md) · [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
-- 优化计划与状态：[docs/OPTIMIZATION.md](./docs/OPTIMIZATION.md)
+- [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) — addresses, tx records, integration gates, verification
+- [docs/TECHNICAL.md](./docs/TECHNICAL.md) — architecture, state machines, invariants
+- [docs/INTEGRATION.md](./docs/INTEGRATION.md) — DreamDEX SDK verification notes
+- [docs/OPTIMIZATION.md](./docs/OPTIMIZATION.md) — P0–P2 roadmap + status
+- [docs/COMMON_GROUND_PRD_v1.0.md](./docs/COMMON_GROUND_PRD_v1.0.md) — full product spec
 
-## 快速开始
+## Quick start
 
 ```bash
 npm install
-npm run spike:market   # 只读验证：发现市场 + 读链上状态
+npm run spike:market            # read-only: discover markets + read on-chain state
 ```
 
-写路径（完整份额铸造/烧回）需要专用测试钱包和 STT gas：
+Write path (mint/burn/redeem) needs a funded test wallet and STT gas:
 
 ```bash
 DREAMDEX_PRIVATE_KEY=0x... npm run spike:market -- --write
 ```
 
-集成细节、实测地址与门禁结果见 [docs/INTEGRATION.md](./docs/INTEGRATION.md)。
+Reproduce the Reactivity wiring:
 
-P0 范围已收窄：一个计划、一个市场、一个基础任务、一个条件 bonus，不做多计划、排行榜、多市场和通用仲裁。完整决策见 [docs/CEO_PLAN.md](./docs/CEO_PLAN.md)。
+```bash
+cd packages/market && npm run build
+CAMPAIGN_ADDRESS=0x... node --env-file-if-exists=.env dist/scripts/subscribe-reactivity.js
+```
 
-开发顺序建议：
+## Scope & known limitations
 
-1. 验证 DreamDEX 结果份额转入、合并和赎回；
-2. 验证固定执行 runner；
-3. 实现 Campaign 合约和三桶账本；
-4. 实现基础任务托管、验收和领取；
-5. 实现追加分支、作废、失败、过期和退款；
-6. 最后实现 Web 界面和证据页。
-
-## 已知限制
-
-- 一个计划绑定一个市场；
-- 一个基础任务，至多一个追加任务；
-- 最多 32 个贡献地址；
-- 首版平台费为 0；
-- 不承诺收益，不赔偿市场方向损失；
-- 不将不同市场或不同计划的份额混用；
-- 不支持仅认捐、不转入资产的承诺。
+- One plan ↔ one market; one base task and at most one bonus task
+- Max 32 contributor addresses
+- Zero platform fee in this version
+- No yield guarantee and no compensation for losing the market direction
+- Refunds are currently proportional-by-points (exact per-share accounting is a next
+  milestone)
+- 6-decimal testnet collateral is hardcoded; mainnet 18-decimal config is a next milestone
 
 ## License
 
-License 待定。当前仓库仅作为黑客松项目设计、开发和演示使用。
+TBD. This repository is for the Somnia × DreamDEX Event Contracts hackathon — design,
+development, and demo.
