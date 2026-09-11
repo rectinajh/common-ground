@@ -82,7 +82,7 @@ await exchange.trader.redeem({ marketId, amount, outcomeIdx }); // 结算后赎�
 | 步骤 | 结果 |
 |---|---|
 | 测试钱包 | `0xB675d67909185f5E983EC51b2AED14667eA31b33` |
-| faucet | mint 10 tUSDC，余额 `500000000 → 10500000000` |
+| faucet | mint 10000 tUSDC，余额 `500000000 → 10500000000` |
 | mintSet | 100 tUSDC → 100 Up + 100 Down（各 `100000000`） |
 | burnSet | 完整份额烧回，余额回到 `10500000000` |
 
