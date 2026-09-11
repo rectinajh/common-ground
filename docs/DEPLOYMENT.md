@@ -114,14 +114,23 @@ Flattened sources are committed under `docs/verification/`. In the Blockscout ex
 
 Files: `CommonGroundCampaign.flattened.sol`, `CommonGroundReactivityHandler.flattened.sol`.
 
-## 8. Demo video script
+## 8. Demo video script (2:00–2:30, English)
 
-1. 0–20s — hook: "Two people disagree about the future. Can they fund something together
-   instead of betting against each other?"
-2. 20–60s — connect wallet → faucet → one-click fund the base task (approve / mint / deposit).
-3. 60–100s — activate the base budget (`activateBase`), showing `1 Up + 1 Down = 1 collateral`.
-4. 100–140s — after settlement, the bonus resolves automatically (keeper or Reactivity).
-5. 140–180s — close: contract addresses, delivery evidence (hash/URI), trust-boundary note.
+Do **not** start with MetaMask. Judges will not connect a wallet.
+
+1. 0:00–0:20 — hook on a black card: “Two people disagree about the future. Can they
+   fund something together instead of betting against each other?”
+2. 0:20–0:50 — open https://commonground-demo.vercel.app (English). Point at the
+   judge strip, then the completed-run timeline. Click `tx ↗` on merge and settlement.
+3. 0:50–1:20 — mechanism: Alice Up + Bob Down → `activateBase` → 100 tUSDC locked
+   *before* the market moves. Base task is already funded.
+4. 1:20–1:50 — settlement: market resolved Down. Bonus skipped. Say the words
+   “Somnia Reactivity, no keeper.” Show handler address.
+5. 1:50–2:20 — close: factory + campaign + “this is Event Contract volume for a
+   real audit, not another PnL board.” Future: permissionless plans on every market.
+
+Recording notes: 1920×1080, cursor large, no desktop clutter, no Chinese unless you
+flip the language toggle at the end for one second.
 
 ## 9. Known Somnia gotchas (why these matter for the submission)
 

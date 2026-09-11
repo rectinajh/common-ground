@@ -140,6 +140,8 @@ docs/                    PRD, technical, integration, deployment, optimization
 - [docs/TECHNICAL.md](./docs/TECHNICAL.md) — architecture, state machines, invariants
 - [docs/INTEGRATION.md](./docs/INTEGRATION.md) — DreamDEX SDK verification notes
 - [docs/OPTIMIZATION.md](./docs/OPTIMIZATION.md) — P0–P2 roadmap + status
+- [docs/PITCH.md](./docs/PITCH.md) — DoraHacks BUIDL paste + video beats
+- [docs/SDK_FEEDBACK.md](./docs/SDK_FEEDBACK.md) — DreamDEX / Somnia SDK notes
 - [docs/COMMON_GROUND_PRD_v1.0.md](./docs/COMMON_GROUND_PRD_v1.0.md) — full product spec
 
 ## Quick start

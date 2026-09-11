@@ -24,6 +24,10 @@ import {
   outcomeTokenAbi,
   poolAbi,
 } from "./config";
+import { DEMO_STEPS, copy, type Lang } from "./copy";
+
+const EXPLORER = "https://shannon-explorer.somnia.network";
+const GITHUB = "https://github.com/rectinajh/common-ground";
 
 const publicClient = createPublicClient({ chain: CHAIN, transport: http() });
 const marketAbi = parseAbi([
@@ -31,14 +35,12 @@ const marketAbi = parseAbi([
   "function isVoided() view returns (bool)",
 ]);
 
-const PLAN_LABELS = ["待启动", "基础已激活", "已完成", "募资失败", "可退款"];
-const TASK_LABELS = ["等待", "就绪", "执行中", "已交付", "已验收", "已驳回", "已过期", "已跳过"];
-
 const fmt = (v: bigint) => (Number(v) / 10 ** COLLATERAL_DECIMALS).toFixed(2);
 const fmtEth = (v: bigint) => (Number(v) / 1e18).toFixed(4);
 const shortHash = (h: string) => (h.length > 18 ? `${h.slice(0, 18)}…` : h);
 const shortAddr = (a: string) => (a.length > 10 ? `${a.slice(0, 6)}…${a.slice(-4)}` : a);
 const ZERO_HASH = `0x${"0".repeat(64)}`;
+type Copy = (typeof copy)[Lang];
 
 type TaskStruct = {
   state: number;
@@ -171,16 +173,16 @@ function useCampaign(campaign: Address): {
   return { view, live, loading, reload: load };
 }
 
-function FlowVisual({ baseBudget }: { baseBudget: bigint }) {
+function FlowVisual({ baseBudget, t }: { baseBudget: bigint; t: Copy }) {
   return (
     <div className="flow">
       <div className="flowPair">
-        <div className="chip up"><span>↑</span>看涨仓位</div>
+        <div className="chip up"><span>↑</span>{t.chipUp}</div>
         <div className="plus">+</div>
-        <div className="chip down"><span>↓</span>看跌仓位</div>
+        <div className="chip down"><span>↓</span>{t.chipDown}</div>
       </div>
       <div className="wire" />
-      <div className="chip merge">合并</div>
+      <div className="chip merge">{t.chipMerge}</div>
       <div className="wire" />
       <div className="chip fund"><span>◎</span>{fmt(baseBudget)} tUSDC</div>
     </div>
@@ -188,6 +190,8 @@ function FlowVisual({ baseBudget }: { baseBudget: bigint }) {
 }
 
 function App() {
+  const [lang, setLang] = useState<Lang>("en");
+  const t = copy[lang];
   const [campaign, setCampaign] = useState<Address>(DEMO_CAMPAIGN as Address);
   const [plans, setPlans] = useState<Address[]>([]);
   const [account, setAccount] = useState<Address | null>(null);
@@ -216,18 +220,18 @@ function App() {
 
   const friendlyError = (e: unknown): string => {
     const m = e instanceof Error ? e.message : String(e);
-    if (/user rejected|user denied|denied message signature|4001/i.test(m)) return "已在钱包中取消";
-    if (/insufficient funds|gas required exceeds allowance/i.test(m)) return "余额不足：需要更多 STT 作为 gas";
-    if (/nonce too low|nonce too high/i.test(m)) return "交易序号冲突，请稍候重试";
-    if (/tradingnotactive/i.test(m)) return "市场已不在交易阶段，无法执行该操作";
-    if (/faucetcapexceeded/i.test(m)) return "测试币水龙头已达本次上限";
-    if (/wrong network|chain mismatch/i.test(m)) return "请切换到 Somnia Testnet（chainId 50312）";
+    if (/user rejected|user denied|denied message signature|4001/i.test(m)) return "Transaction rejected in wallet";
+    if (/insufficient funds|gas required exceeds allowance/i.test(m)) return "Insufficient STT for gas";
+    if (/nonce too low|nonce too high/i.test(m)) return "Nonce conflict — retry shortly";
+    if (/tradingnotactive/i.test(m)) return "Market is no longer trading";
+    if (/faucetcapexceeded/i.test(m)) return "Faucet cap reached for now";
+    if (/wrong network|chain mismatch/i.test(m)) return "Switch to Somnia Testnet (chainId 50312)";
     return m.length > 160 ? `${m.slice(0, 160)}…` : m;
   };
 
   const connect = async () => {
     const eth = (window as any).ethereum;
-    if (!eth) return notify("请安装 MetaMask", "err");
+    if (!eth) return notify("Please install MetaMask", "err");
     await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xC488" }] }).catch(
       () => eth.request({
         method: "wallet_addEthereumChain",
@@ -236,7 +240,7 @@ function App() {
           chainName: "Somnia Testnet",
           rpcUrls: ["https://dream-rpc.somnia.network"],
           nativeCurrency: { name: "STT", symbol: "STT", decimals: 18 },
-          blockExplorerUrls: ["https://shannon-explorer.somnia.network"],
+          blockExplorerUrls: [EXPLORER],
         }],
       }),
     );
@@ -259,9 +263,9 @@ function App() {
         params: [`Sign in to COMMON GROUND\n${account}\n${Date.now()}`, account],
       });
       setSignature(sig as string);
-      notify("签名验证成功", "ok");
+      notify("Signature verified", "ok");
     } catch (e) {
-      notify(`签名失败: ${friendlyError(e)}`, "err");
+      notify(`Sign-in failed: ${friendlyError(e)}`, "err");
     }
   };
 
@@ -287,7 +291,7 @@ function App() {
         set.add(c.toLowerCase());
       }
     } catch {
-      // Factory read is best-effort; the demo campaign remains seeded.
+      // Factory read is best-effort.
     }
     setPlans([...set].map((a) => a as Address));
   }, []);
@@ -299,7 +303,7 @@ function App() {
   const faucet = async () => {
     if (!walletClient || !account) return;
     setBusy("faucet");
-    setStep("领取测试币…");
+    setStep("Claiming test tokens…");
     setMsg(null);
     try {
       const hash = await walletClient.writeContract({
@@ -311,9 +315,9 @@ function App() {
       });
       await publicClient.waitForTransactionReceipt({ hash });
       await refreshBalance();
-      notify("已领取 10,000 tUSDC", "ok");
+      notify("Claimed 10,000 tUSDC", "ok");
     } catch (e) {
-      notify(`领取失败: ${friendlyError(e)}`, "err");
+      notify(`Faucet failed: ${friendlyError(e)}`, "err");
     } finally {
       setBusy(null);
       setStep(null);
@@ -331,20 +335,20 @@ function App() {
         const hash = await call();
         await publicClient.waitForTransactionReceipt({ hash });
       };
-      await send("授权抵押品…", () =>
+      await send("Approve collateral…", () =>
         walletClient.writeContract({ address: view.collateral, abi: collateralAbi, functionName: "approve", args: [view.pool, amount], ...FEES }));
-      await send("铸造 Up + Down 份额…", () =>
+      await send("Mint Up + Down set…", () =>
         walletClient.writeContract({ address: view.pool, abi: poolAbi, functionName: "mintSet", args: [account, account, amount], ...FEES }));
-      await send("授权金库…", () =>
+      await send("Authorize vault…", () =>
         walletClient.writeContract({ address: view.outcomeToken, abi: outcomeTokenAbi, functionName: "setOperator", args: [campaign, true], ...FEES }));
-      await send(side === "up" ? "交付看涨份额…" : "交付看跌份额…", () =>
+      await send(side === "up" ? "Deposit Up share…" : "Deposit Down share…", () =>
         walletClient.writeContract({ address: campaign, abi: campaignAbi, functionName: "deposit", args: [side === "up" ? 0 : 1, amount], ...FEES }));
-      setStep("完成");
-      notify(side === "up" ? "已看涨资助 100 tUSDC" : "已看跌资助 100 tUSDC", "ok");
+      setStep("Done");
+      notify(side === "up" ? "Funded Up · 100 tUSDC" : "Funded Down · 100 tUSDC", "ok");
       await refreshBalance();
       reload();
     } catch (e) {
-      notify(`失败: ${friendlyError(e)}`, "err");
+      notify(`Failed: ${friendlyError(e)}`, "err");
     } finally {
       setBusy(null);
       setTimeout(() => setStep(null), 1500);
@@ -362,20 +366,20 @@ function App() {
         const hash = await call();
         await publicClient.waitForTransactionReceipt({ hash });
       };
-      await send("授权抵押品…", () =>
+      await send("Approve collateral…", () =>
         walletClient.writeContract({ address: view.collateral, abi: collateralAbi, functionName: "approve", args: [view.pool, amount], ...FEES }));
-      await send("铸造 Up + Down 份额…", () =>
+      await send("Mint Up + Down set…", () =>
         walletClient.writeContract({ address: view.pool, abi: poolAbi, functionName: "mintSet", args: [account, account, amount], ...FEES }));
-      await send("授权金库…", () =>
+      await send("Authorize vault…", () =>
         walletClient.writeContract({ address: view.outcomeToken, abi: outcomeTokenAbi, functionName: "setOperator", args: [campaign, true], ...FEES }));
-      await send("交付追加份额…", () =>
+      await send("Deposit bonus share…", () =>
         walletClient.writeContract({ address: campaign, abi: campaignAbi, functionName: "deposit", args: [2, amount], ...FEES }));
-      setStep("完成");
-      notify("已追加资助 50 tUSDC", "ok");
+      setStep("Done");
+      notify("Bonus funded · 50 tUSDC", "ok");
       await refreshBalance();
       reload();
     } catch (e) {
-      notify(`失败: ${friendlyError(e)}`, "err");
+      notify(`Failed: ${friendlyError(e)}`, "err");
     } finally {
       setBusy(null);
       setTimeout(() => setStep(null), 1500);
@@ -385,14 +389,14 @@ function App() {
   const activate = async () => {
     if (!walletClient) return;
     setBusy("activate");
-    setStep("合并互补份额…");
+    setStep("Merging complementary shares…");
     try {
       const h = await walletClient.writeContract({ address: campaign, abi: campaignAbi, functionName: "activateBase", ...FEES });
       await publicClient.waitForTransactionReceipt({ hash: h });
-      notify("基础预算已合并锁定", "ok");
+      notify("Base budget merged and locked", "ok");
       reload();
     } catch (e) {
-      notify(`失败: ${friendlyError(e)}`, "err");
+      notify(`Failed: ${friendlyError(e)}`, "err");
     } finally {
       setBusy(null);
       setStep(null);
@@ -402,7 +406,7 @@ function App() {
   const createPlan = async () => {
     if (!walletClient || !view || !account) return;
     setBusy("create");
-    setStep("部署新计划合约…");
+    setStep("Deploying new plan…");
     setMsg(null);
     try {
       const hash = await walletClient.writeContract({
@@ -431,9 +435,9 @@ function App() {
       const newPlan = created ? (created.args as { campaign: Address }).campaign : null;
       await loadPlans();
       if (newPlan) setCampaign(newPlan);
-      notify(newPlan ? `新计划已创建：${shortAddr(newPlan)}` : "新计划已创建", "ok");
+      notify(newPlan ? `New plan: ${shortAddr(newPlan)}` : "New plan created", "ok");
     } catch (e) {
-      notify(`创建失败: ${friendlyError(e)}`, "err");
+      notify(`Create failed: ${friendlyError(e)}`, "err");
     } finally {
       setBusy(null);
       setStep(null);
@@ -449,18 +453,19 @@ function App() {
       <header className="topbar">
         <div className="brand">
           <span className="mark">◎</span>
-          <span>COMMON GROUND</span>
-          <span className={`live ${live ? "on" : ""}`} title={live ? "实时事件流已连接" : "轮询中（实时流未连接）"}>
-            <i />{live ? "LIVE" : "POLL"}
+          <span>{t.brand}</span>
+          <span className={`live ${live ? "on" : ""}`} title={live ? "Live event stream connected" : "Polling (stream offline)"}>
+            <i />{live ? t.live : t.poll}
           </span>
         </div>
         <div className="wallet">
+          <button className="mini" onClick={() => setLang(lang === "en" ? "zh" : "en")}>{t.switchLang}</button>
           {!account ? (
-            <button className="btn ghost" onClick={connect}>连接钱包</button>
+            <button className="btn ghost" onClick={connect}>{t.connect}</button>
           ) : (
             <>
               <span className="addr">{account.slice(0, 6)}…{account.slice(-4)}</span>
-              {signature ? <span className="ok">✓ 已验证</span> : <button className="btn" onClick={signIn}>签名验证</button>}
+              {signature ? <span className="ok">✓ {t.signed}</span> : <button className="btn" onClick={signIn}>{t.signIn}</button>}
             </>
           )}
         </div>
@@ -473,39 +478,43 @@ function App() {
           <span>{fmt(balances.tUsdc)} tUSDC</span>
           <span className="spacer" />
           <button className="mini" disabled={!!busy} onClick={faucet}>
-            {busy === "faucet" ? step ?? "领取中…" : "领测试 tUSDC"}
+            {busy === "faucet" ? step ?? "…" : t.faucetTusdc}
           </button>
-          <a className="mini link" href={STT_FAUCET_URL} target="_blank" rel="noreferrer">领 STT ↗</a>
+          <a className="mini link" href={STT_FAUCET_URL} target="_blank" rel="noreferrer">{t.faucetStt}</a>
         </div>
       )}
 
-      <section className="onboard">
-        <span className="step"><b>①</b>领测试币</span>
-        <span className="arrow">→</span>
-        <span className="step"><b>②</b>选立场（看涨 / 看跌）</span>
-        <span className="arrow">→</span>
-        <span className="step"><b>③</b>一键资助，互补份额自动合并</span>
+      <section className="judge">
+        <span className="kicker">{t.judgeKicker}</span>
+        <p>{t.judgeLine}</p>
       </section>
 
       <section className="hero">
         <h1>
-          不必对未来达成一致，
+          {t.hero1}
           <br />
-          <span className="grad">也能共同完成一件事。</span>
+          <span className="grad">{t.hero2}</span>
         </h1>
         <p className="sub">
-          <code>1 Up + 1 Down = 1 抵押品</code>。两个观点相反的人，不赌输赢，而是一起出钱
-          请人审计代码、维护项目、做研究；市场涨跌只决定第二笔钱发不发。
+          <code>{t.subBefore}</code>{t.subAfter}
         </p>
-        {loading && !view && <p className="loadingHint">正在读取链上状态…</p>}
-        {view && <FlowVisual baseBudget={view.baseBudget} />}
+        {loading && !view && <p className="loadingHint">{t.loading}</p>}
+        {view && <FlowVisual baseBudget={view.baseBudget} t={t} />}
+      </section>
+
+      <section className="onboard">
+        <span className="step"><b>①</b>{t.onboard1}</span>
+        <span className="arrow">→</span>
+        <span className="step"><b>②</b>{t.onboard2}</span>
+        <span className="arrow">→</span>
+        <span className="step"><b>③</b>{t.onboard3}</span>
       </section>
 
       <section className="plans">
         <div className="plansHead">
-          <span className="k">计划列表（{plans.length}）</span>
+          <span className="k">{t.plans} ({plans.length})</span>
           <button className="mini" disabled={!ready || !!busy} onClick={createPlan}>
-            {busy === "create" ? step ?? "创建中…" : "+ 创建计划"}
+            {busy === "create" ? step ?? t.creating : t.create}
           </button>
         </div>
         <div className="planSelect">
@@ -515,7 +524,7 @@ function App() {
               className={`planChip ${p.toLowerCase() === campaign.toLowerCase() ? "active" : ""}`}
               onClick={() => setCampaign(p)}
             >
-              {shortAddr(p)}
+              {p.toLowerCase() === DEMO_CAMPAIGN.toLowerCase() ? t.demoPlan : shortAddr(p)}
             </button>
           ))}
         </div>
@@ -523,19 +532,19 @@ function App() {
 
       <section className="stats">
         <div className="stat">
-          <span className="k">计划状态</span>
-          <b>{view ? PLAN_LABELS[view.planState] : "—"}</b>
+          <span className="k">{t.planState}</span>
+          <b>{view ? (t.planLabels[view.planState] ?? "—") : "—"}</b>
         </div>
         <div className="stat">
-          <span className="k">基础预算</span>
+          <span className="k">{t.baseBudget}</span>
           <b className="c1">{view ? fmt(view.baseBudget) : "—"}<small> tUSDC</small></b>
         </div>
         <div className="stat">
-          <span className="k">追加预算</span>
+          <span className="k">{t.bonusBudget}</span>
           <b className="c2">{view ? fmt(view.bonusBudget) : "—"}<small> tUSDC</small></b>
         </div>
         <div className="stat">
-          <span className="k">贡献者</span>
+          <span className="k">{t.contributors}</span>
           <b>{view ? view.contributorCount.toString() : "—"}</b>
         </div>
       </section>
@@ -543,14 +552,14 @@ function App() {
       <section className="tasks">
         <article className="card base">
           <div className="cardHead">
-            <span className="badge base">无条件</span>
-            <span className={`state s${view?.baseTask.state ?? 0}`}>{view ? TASK_LABELS[view.baseTask.state] : "—"}</span>
+            <span className="badge base">{t.unconditional}</span>
+            <span className={`state s${view?.baseTask.state ?? 0}`}>{view ? (t.taskLabels[view.baseTask.state] ?? "—") : "—"}</span>
           </div>
-          <h2>基础任务 · 无论如何都做</h2>
-          <p>选一个立场，另一方补上互补份额，合并成确定性预算。方向不同也能一起出资。</p>
+          <h2>{t.baseTitle}</h2>
+          <p>{t.baseBody}</p>
           {view && view.baseTask.evidenceHash !== ZERO_HASH && (
             <div className="evidence">
-              <span>交付证据</span>
+              <span>{t.evidence}</span>
               <code title={view.baseTask.evidenceUri}>
                 {shortHash(view.baseTask.evidenceHash)}
                 {view.baseTask.evidenceUri ? ` · ${view.baseTask.evidenceUri.slice(0, 40)}` : ""}
@@ -559,18 +568,18 @@ function App() {
           )}
           {view && view.baseTask.reasonHash !== ZERO_HASH && (
             <div className="evidence">
-              <span>验收理由</span>
+              <span>{t.reason}</span>
               <code>{shortHash(view.baseTask.reasonHash)}</code>
             </div>
           )}
           <div className="cardFoot">
-            <span>预算 <b>{view ? fmt(view.baseTask.budget) : "—"} tUSDC</b></span>
+            <span>{t.budget} <b>{view ? fmt(view.baseTask.budget) : "—"} tUSDC</b></span>
             <div className="footBtns">
               <button className="btn upBtn" disabled={!ready || !!busy} onClick={() => fundSide("up")}>
-                {busy === "up" ? step ?? "处理中…" : "看涨 ↑ 资助"}
+                {busy === "up" ? step ?? "…" : t.fundUp}
               </button>
               <button className="btn downBtn" disabled={!ready || !!busy} onClick={() => fundSide("down")}>
-                {busy === "down" ? step ?? "处理中…" : "看跌 ↓ 资助"}
+                {busy === "down" ? step ?? "…" : t.fundDown}
               </button>
             </div>
           </div>
@@ -578,14 +587,14 @@ function App() {
 
         <article className="card bonus">
           <div className="cardHead">
-            <span className="badge bonus">有条件</span>
-            <span className={`state s${view?.bonusTask.state ?? 0}`}>{view ? TASK_LABELS[view.bonusTask.state] : "—"}</span>
+            <span className="badge bonus">{t.conditional}</span>
+            <span className={`state s${view?.bonusTask.state ?? 0}`}>{view ? (t.taskLabels[view.bonusTask.state] ?? "—") : "—"}</span>
           </div>
-          <h2>追加任务 · 结算后才触发</h2>
-          <p>仅当市场结果为 Up 时，才对同一 commit 追加边界 / 异常检查。条件不满足即跳过。</p>
+          <h2>{t.bonusTitle}</h2>
+          <p>{t.bonusBody}</p>
           {view && view.bonusTask.evidenceHash !== ZERO_HASH && (
             <div className="evidence">
-              <span>交付证据</span>
+              <span>{t.evidence}</span>
               <code title={view.bonusTask.evidenceUri}>
                 {shortHash(view.bonusTask.evidenceHash)}
                 {view.bonusTask.evidenceUri ? ` · ${view.bonusTask.evidenceUri.slice(0, 40)}` : ""}
@@ -594,28 +603,66 @@ function App() {
           )}
           {view && view.bonusTask.reasonHash !== ZERO_HASH && (
             <div className="evidence">
-              <span>验收理由</span>
+              <span>{t.reason}</span>
               <code>{shortHash(view.bonusTask.reasonHash)}</code>
             </div>
           )}
           <div className="cardFoot">
-            <span>预算 <b>{view ? fmt(view.bonusTask.budget) : "—"} tUSDC</b></span>
+            <span>{t.budget} <b>{view ? fmt(view.bonusTask.budget) : "—"} tUSDC</b></span>
             <button className="btn amber" disabled={!ready || !!busy} onClick={fundBonus}>
-              {busy === "bonus" ? step ?? "处理中…" : "追加 50 tUSDC"}
+              {busy === "bonus" ? step ?? "…" : t.fundBonus}
             </button>
           </div>
         </article>
       </section>
 
+      {view?.settled && <div className="settledNote">{t.settledNote}</div>}
+
+      <section className="story">
+        <div className="storyHead">
+          <div>
+            <span className="kicker">{t.storyTitle}</span>
+            <h2>{t.storyTitle}</h2>
+            <p>{t.storyLead}</p>
+          </div>
+          <div className="storyResult">
+            <span className="k">{t.storyResult}</span>
+            <b>{t.resultBase}</b>
+            <b className="dim">{t.resultBonus}</b>
+          </div>
+        </div>
+        <ul className="timeline">
+          {DEMO_STEPS.map((s, i) => (
+            <li key={s.tx}>
+              <span className="n">{i + 1}</span>
+              <div>
+                <strong>{s.title[lang]}</strong>
+                <p>{s.detail[lang]}</p>
+              </div>
+              <a href={`${EXPLORER}/tx/${s.tx}`} target="_blank" rel="noreferrer">{t.openTx} ↗</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="proof">
+        <span className="k">{t.proofTitle}</span>
+        <div className="proofLinks">
+          <a href={GITHUB} target="_blank" rel="noreferrer">{t.github} ↗</a>
+          <a href={`${EXPLORER}/address/${FACTORY_ADDRESS}`} target="_blank" rel="noreferrer">{t.openAddr}: Factory ↗</a>
+          <a href={`${EXPLORER}/address/${campaign}`} target="_blank" rel="noreferrer">{t.openAddr}: Campaign ↗</a>
+        </div>
+      </section>
+
       <section className="bar">
         <div className="barLeft">
-          <span className="k">计划合约</span>
+          <span className="k">{t.campaign}</span>
           <input value={campaign} onChange={(e) => setCampaign(e.target.value as Address)} spellCheck={false} />
         </div>
         <div className="barRight">
-          {view?.settled && <span className="settled">市场已结算</span>}
+          {view?.settled && <span className="settled">{t.settled}</span>}
           <button className="btn ghost" disabled={!ready || !!busy} onClick={activate}>
-            {busy === "activate" ? step ?? "合并中…" : "合并基础预算"}
+            {busy === "activate" ? step ?? t.merging : t.mergeBtn}
           </button>
         </div>
       </section>
