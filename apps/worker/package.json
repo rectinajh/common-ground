@@ -1,0 +1,17 @@
+{
+  "name": "@common-ground/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "npm run build && node --env-file-if-exists=.env dist/index.js",
+    "once": "npm run build && node --env-file-if-exists=.env dist/index.js --once"
+  },
+  "dependencies": {
+    "viem": "^2.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

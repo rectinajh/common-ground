@@ -13,6 +13,7 @@
   },
   "scripts": {
     "spike:market": "npm run spike --workspace @common-ground/market --",
+    "worker:once": "npm run once --workspace @common-ground/worker",
     "typecheck": "tsc --noEmit -p packages/market/tsconfig.json"
   },
   "devDependencies": {
