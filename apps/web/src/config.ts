@@ -16,7 +16,9 @@ export const STT_FAUCET_URL = "https://testnet.somnia.network/";
 // Latest live P0 demo campaign. Swap for a fresh one when re-deploying.
 export const DEMO_CAMPAIGN = "0xb8d6153b6ca057c3b0f594493058a05f335d3198";
 
-export const UNIT = 10n ** 6n;
+// Collateral decimals. Shannon testnet tUSDC is 6; mainnet USDso is 18.
+export const COLLATERAL_DECIMALS = 6;
+export const UNIT = 10n ** BigInt(COLLATERAL_DECIMALS);
 
 // Shannon testnet tUSDC (collateral) and STT native token.
 export const T_USDC = "0x70a86D8842FB63C4Ad2b7cdddF530eBf1BB25d8E";
@@ -37,7 +39,7 @@ export const campaignAbi = parseAbi([
   "function baseUpTokenId() view returns (uint256)",
   "function baseDownTokenId() view returns (uint256)",
   "function bonusTokenId() view returns (uint256)",
-  "function getTask(uint256) view returns ((uint8 state, bytes32 evidenceHash, string evidenceUri, uint256 startDeadline, uint256 decisionDeadline, uint256 budget))",
+  "function getTask(uint256) view returns ((uint8 state, bytes32 evidenceHash, string evidenceUri, bytes32 reasonHash, uint256 startDeadline, uint256 decisionDeadline, uint256 budget))",
   "function deposit(uint8 bucket, uint256 amount)",
   "function activateBase()",
   "function syncMarketAndBonus()",

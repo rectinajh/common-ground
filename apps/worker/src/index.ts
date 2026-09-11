@@ -48,7 +48,7 @@ function readCampaignAbi(): Abi {
   return JSON.parse(readFileSync(path, "utf8")).abi as Abi;
 }
 
-type Task = readonly [number, string, string, bigint, bigint, bigint];
+type Task = readonly [number, string, string, string, bigint, bigint, bigint];
 
 async function decide(
   publicClient: ReturnType<typeof createPublicClient>,
@@ -93,7 +93,7 @@ async function decide(
       args: [i],
     })) as Task;
     const state = t[0];
-    const decisionDeadline = t[4];
+    const decisionDeadline = t[5];
     if ((state === 1 || state === 2) && decisionDeadline > 0n && decisionDeadline < now) {
       return { fn: "expireTask", args: [i], label: `task ${i} deadline passed -> expireTask` };
     }

@@ -51,6 +51,7 @@ contract CommonGroundCampaign {
         TaskState state;
         bytes32 evidenceHash;
         string evidenceUri;
+        bytes32 reasonHash;
         uint256 startDeadline;
         uint256 decisionDeadline;
         uint256 budget;
@@ -347,6 +348,7 @@ contract CommonGroundCampaign {
         require(t.state == TaskState.Submitted, "not submitted");
         require(t.decisionDeadline >= block.timestamp, "past deadline");
         t.state = accepted ? TaskState.Accepted : TaskState.Rejected;
+        t.reasonHash = reasonHash;
         emit Decision(index, accepted, reasonHash);
         if (!accepted) {
             refundPool += t.budget;

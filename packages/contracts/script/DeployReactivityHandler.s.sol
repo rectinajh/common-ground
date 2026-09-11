@@ -14,7 +14,9 @@ contract DeployReactivityHandler is Script {
         address campaign_ = vm.envAddress("CAMPAIGN_ADDRESS");
 
         vm.startBroadcast();
-        handler = new CommonGroundReactivityHandler(CommonGroundCampaign(campaign_));
+        handler = new CommonGroundReactivityHandler();
+        CommonGroundCampaign campaign = CommonGroundCampaign(campaign_);
+        handler.register(campaign.market(), campaign);
         vm.stopBroadcast();
 
         console2.log("CommonGroundReactivityHandler deployed at:", address(handler));

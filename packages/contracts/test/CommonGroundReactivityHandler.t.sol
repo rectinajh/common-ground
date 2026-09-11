@@ -58,7 +58,8 @@ contract CommonGroundReactivityHandlerTest is Test {
             payee,
             32
         );
-        handler = new CommonGroundReactivityHandler(campaign);
+        handler = new CommonGroundReactivityHandler();
+        handler.register(address(market), campaign);
     }
 
     function fund() internal {
@@ -90,9 +91,9 @@ contract CommonGroundReactivityHandlerTest is Test {
         fire(address(market));
 
         assertEq(campaign.bonusBudget(), 50);
-        (CommonGroundCampaign.TaskState state,,,,,) = campaign.bonusTask();
+        (CommonGroundCampaign.TaskState state,,,,,,) = campaign.bonusTask();
         assertEq(uint8(state), 1); // Ready
-        assertEq(handler.consumed(), true);
+        assertEq(handler.consumed(address(market)), true);
     }
 
     function testOnEventSkipsBonusWhenMarketResolvesDown() public {
@@ -102,7 +103,7 @@ contract CommonGroundReactivityHandlerTest is Test {
         fire(address(market));
 
         assertEq(campaign.bonusBudget(), 0);
-        (CommonGroundCampaign.TaskState state,,,,,) = campaign.bonusTask();
+        (CommonGroundCampaign.TaskState state,,,,,,) = campaign.bonusTask();
         assertEq(uint8(state), 7); // Skipped
     }
 
@@ -116,14 +117,14 @@ contract CommonGroundReactivityHandlerTest is Test {
         fire(address(market));
 
         assertEq(campaign.bonusBudget(), 50);
-        assertEq(handler.consumed(), true);
+        assertEq(handler.consumed(address(market)), true);
     }
 
-    function testOnEventRevertsForWrongEmitter() public {
+    function testOnEventRevertsForUnregisteredEmitter() public {
         fund();
         market.setResolved(1, 0);
 
-        vm.expectRevert(bytes("wrong emitter"));
+        vm.expectRevert(bytes("unregistered"));
         fire(address(0xBEEF));
     }
 
@@ -134,7 +135,7 @@ contract CommonGroundReactivityHandlerTest is Test {
         vm.expectRevert(bytes("not settled"));
         fire(address(market));
 
-        assertEq(handler.consumed(), false);
+        assertEq(handler.consumed(address(market)), false);
     }
 
     function testOnEventRejectsNonPrecompileCaller() public {
@@ -143,5 +144,17 @@ contract CommonGroundReactivityHandlerTest is Test {
 
         vm.expectRevert(bytes("not precompile"));
         handler.onEvent(address(market), emptyTopics, emptyData);
+    }
+
+    function testRegisterRejectsMarketMismatch() public {
+        vm.prank(handler.owner());
+        vm.expectRevert(bytes("market mismatch"));
+        handler.register(address(0xBEEF), campaign);
+    }
+
+    function testRegisterRejectsNonOwner() public {
+        vm.prank(address(0xBAD));
+        vm.expectRevert(bytes("not owner"));
+        handler.register(address(market), campaign);
     }
 }

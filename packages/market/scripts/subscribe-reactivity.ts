@@ -50,9 +50,11 @@ const campaignAbi = parseAbi([
 ]);
 
 const handlerAbi = parseAbi([
-  "constructor(address campaign_)",
-  "function campaign() view returns (address)",
-  "function consumed() view returns (bool)",
+  "constructor()",
+  "function owner() view returns (address)",
+  "function register(address market, address campaign_)",
+  "function campaigns(address market) view returns (address)",
+  "function consumed(address market) view returns (bool)",
   "function onEvent(address emitter, bytes32[] eventTopics, bytes data)",
 ]);
 
@@ -108,7 +110,7 @@ async function main(): Promise<void> {
       nonce: nonce++,
       abi: handlerAbi,
       bytecode: readHandlerBytecode(),
-      args: [CAMPAIGN],
+      args: [],
       gas: 5_000_000n,
     });
     const receipt = await publicClient.waitForTransactionReceipt({ hash: deployHash });
@@ -127,6 +129,20 @@ async function main(): Promise<void> {
   console.log("market:", market);
   console.log("resolved selector:", RESOLVED_SELECTOR);
   console.log("voided selector:", VOIDED_SELECTOR);
+
+  // Register the campaign for its market before subscribing (owner-only).
+  const regHash = await walletClient.writeContract({
+    account,
+    ...FEES,
+    nonce: nonce++,
+    address: handler,
+    abi: handlerAbi,
+    functionName: "register",
+    args: [market, CAMPAIGN],
+    gas: 5_000_000n,
+  });
+  await publicClient.waitForTransactionReceipt({ hash: regHash });
+  console.log("registered campaign for market:", regHash);
 
   const ids: bigint[] = [];
 

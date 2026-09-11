@@ -75,10 +75,10 @@ permission checks on a fixed commit; bonus task = boundary / exception checks.
 4. **Explicit failure and refund paths.** Unfunded, voided, expired, rejected, or failed
    tasks each have a defined recovery rule. Refunds don't depend on anyone's goodwill.
 
-5. **Settlement triggers on-chain, automatically.** A `CommonGroundReactivityHandler`
-   subscribes to the market's `Resolved`/`Voided` events on the Somnia Reactivity precompile.
-   On settlement the precompile calls `onEvent()` and advances the campaign with **no
-   off-chain keeper, cron, or script**.
+5. **Settlement triggers on-chain, automatically.** A shared
+   `CommonGroundReactivityHandler` keeps a `market => campaign` registry, subscribes to each
+   market's `Resolved`/`Voided` events on the Somnia Reactivity precompile, and on settlement
+   advances the matching campaign with **no off-chain keeper, cron, or script**.
 
 ## On-chain evidence (live testnet demo)
 
@@ -90,7 +90,8 @@ Chain: **Somnia Shannon testnet** (`chainId 50312`, hex `0xC488`) · RPC
 | Contract | Address | Role |
 |---|---|---|
 | `CommonGroundCampaign` (final demo) | `0xb8d6153b6ca057c3b0f594493058a05f335d3198` | one-plan escrow + task lifecycle |
-| `CommonGroundReactivityHandler` | `0x47f4c7fa7176dbc9b337274fa877ac8519aa8b20` | on-chain settlement trigger |
+| `CommonGroundFactory` | `0x63bFD49DbB74A1f731229258fF76495E3b2d8F90` | permissionless plan factory + registry |
+| `CommonGroundReactivityHandler` (multi-plan) | `0xd5dae8eed198aca44f34974c4a2afd45a1d43e37` | on-chain settlement trigger |
 
 ### End-to-end demo transactions
 
@@ -115,9 +116,10 @@ Chain: **Somnia Shannon testnet** (`chainId 50312`, hex `0xC488`) · RPC
 
 | Purpose | Address / subscription id | Tx |
 |---|---|---|
-| Handler deploy | `0x47f4c7fa7176dbc9b337274fa877ac8519aa8b20` | `0xb351dd4b4d190e205e9416df3fe35371a472574dc51a343cabdd7d60ac05d10e` |
-| Subscribe `Resolved` | id `18086415` | `0x7f0ddf0079c3ee6e0f5f5512849012da1a71f8f486b5d665dd4dfa13a0d23299` |
-| Subscribe `Voided` | id `18086423` | `0x2ba2b79c1d1ea87ed4eab8a4a3f2fd7b5bcd1a49eefde6ce1642b992c8e6c07b` |
+| Handler deploy | `0xd5dae8eed198aca44f34974c4a2afd45a1d43e37` | `0x6df577fc227a92e14e471e1f4a106465262a7f0932da9d4e89c59074f24444d0` |
+| Register campaign → market | — | `0x8e4ebb3735e3b1a8f79098a707f97c4352a811d98a6a0a48db603584a4b664a4` |
+| Subscribe `Resolved` | id `18392207` | `0xe6618f9be487ca27ef9ec5d50310363d315a179c09f09c7ca520774b7de93b35` |
+| Subscribe `Voided` | id `18392213` | `0x1768418e74f866092b7fd2683184784e91c19ef60c546fd86a5840381c316335` |
 
 Full deployment evidence, integration gates, verification steps, and demo-video script:
 [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).
@@ -127,7 +129,7 @@ Full deployment evidence, integration gates, verification steps, and demo-video 
 ```text
 apps/web/                plan, contribution, evidence, exit UI
 apps/worker/             permissionless keeper (fallback trigger)
-packages/contracts/      campaign, Reactivity handler, adapters, tests
+packages/contracts/      campaign, factory/registry, Reactivity handler, adapters, tests
 packages/market/         SDK wrappers, deploy + subscribe scripts
 docs/                    PRD, technical, integration, deployment, optimization
 ```

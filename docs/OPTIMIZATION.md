@@ -10,14 +10,17 @@
 | P0-2 一句话定位 | ✅ 完成 | 首屏 `1 Up + 1 Down = 1 抵押品` + 反直觉对比 |
 | P0-3 合约验证 | 🟡 待提交 | 扁平化源码已生成：`docs/verification/*.flattened.sol` |
 | P0-4 一键资助 + 进度 | ✅ 完成 | `App.tsx` 逐步 approve → mintSet → setOperator → deposit |
-| P0-5 交付证据 | 🟡 卡片已显示 | 任务卡展示 evidenceHash/URI；独立详情页留给 P2 |
+| P0-5 交付证据 | 🟡 卡片已显示 | 任务卡展示 evidenceHash/URI + 验收 reasonHash；独立详情页留给 P2 |
 | P0-6 demo 视频 | 🟡 待录制 | 见 `docs/DEPLOYMENT.md` 的录制脚本 |
-| P1-1 Reactivity 自动触发 | ✅ 完成 | handler `0x47f4c7fa…8b20`，订阅 `18086415` / `18086423`（已上链） |
+| P1-1 Reactivity 自动触发 | ✅ 完成（多计划） | 多计划 registry handler `0xd5dae8ee…43e37`，订阅 `18392207` / `18392213`（已上链） |
 | P1-2 实时事件流 | ✅ 完成 | 前端 `wss://api.infra.testnet.somnia.network/ws` 订阅 newHeads，失败回退轮询 |
 | P1-3 Faucet 引导 | ✅ 完成 | 一键领 tUSDC + STT 官方 faucet 链接 |
-| P1-4 安全/边界测试 | ✅ 完成 | `forge test` 18/18 通过（含重入、精度、越界、并发） |
+| P1-4 安全/边界测试 | ✅ 完成 | `forge test` 22/22 通过（含重入、精度、越界、并发、factory、handler registry） |
 | P1-5 商业用例 | ✅ 完成 | README 首屏协议安全审计场景 |
 | P1-6 错误/加载态 | ✅ 完成 | 分类 toast（info/ok/err）+ 逐步状态 + LIVE 指示 |
+| P2-1/P2-3 计划工厂 + 注册表 | 🟡 合约完成 | `CommonGroundFactory` `0x63bFD49D…8F90`（已上链）；前端「创建计划/列表」待接 |
+| P2-5 CI/CD | ✅ 完成 | `.github/workflows/ci.yml`：forge test + market/worker/web build |
+| P2-6 主网精度配置 | ✅ 完成（配置化） | 前端 `COLLATERAL_DECIMALS` 可切换 6/18；合约按原始 uint 无精度假设 |
 
 ---
 

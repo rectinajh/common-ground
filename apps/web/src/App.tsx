@@ -10,6 +10,7 @@ import {
 } from "viem";
 import {
   CHAIN,
+  COLLATERAL_DECIMALS,
   DEMO_CAMPAIGN,
   STT_FAUCET_URL,
   T_USDC,
@@ -30,7 +31,7 @@ const marketAbi = parseAbi([
 const PLAN_LABELS = ["待启动", "基础已激活", "已完成", "募资失败", "可退款"];
 const TASK_LABELS = ["等待", "就绪", "执行中", "已交付", "已验收", "已驳回", "已过期", "已跳过"];
 
-const fmt = (v: bigint) => (Number(v) / 1e6).toFixed(2);
+const fmt = (v: bigint) => (Number(v) / 10 ** COLLATERAL_DECIMALS).toFixed(2);
 const fmtEth = (v: bigint) => (Number(v) / 1e18).toFixed(4);
 const shortHash = (h: string) => (h.length > 18 ? `${h.slice(0, 18)}…` : h);
 const ZERO_HASH = `0x${"0".repeat(64)}`;
@@ -39,6 +40,7 @@ type TaskStruct = {
   state: number;
   evidenceHash: `0x${string}`;
   evidenceUri: string;
+  reasonHash: `0x${string}`;
   startDeadline: bigint;
   decisionDeadline: bigint;
   budget: bigint;
@@ -377,8 +379,8 @@ function App() {
           <span className="grad">也能共同完成一件事。</span>
         </h1>
         <p className="sub">
-          <code>1 Up + 1 Down = 1 抵押品</code>。两个判断相反的人，把对赌变成共同出资：
-          配对部分无条件资助基础任务，市场结果只决定要不要追加执行。
+          <code>1 Up + 1 Down = 1 抵押品</code>。两个观点相反的人，不赌输赢，而是一起出钱
+          请人审计代码、维护项目、做研究；市场涨跌只决定第二笔钱发不发。
         </p>
         {loading && !view && <p className="loadingHint">正在读取链上状态…</p>}
         {view && <FlowVisual baseBudget={view.baseBudget} />}
@@ -420,6 +422,12 @@ function App() {
               </code>
             </div>
           )}
+          {view && view.baseTask.reasonHash !== ZERO_HASH && (
+            <div className="evidence">
+              <span>验收理由</span>
+              <code>{shortHash(view.baseTask.reasonHash)}</code>
+            </div>
+          )}
           <div className="cardFoot">
             <span>预算 <b>{view ? fmt(view.baseTask.budget) : "—"} tUSDC</b></span>
             <button className="btn" disabled={!ready || !!busy} onClick={() => fund("base")}>
@@ -442,6 +450,12 @@ function App() {
                 {shortHash(view.bonusTask.evidenceHash)}
                 {view.bonusTask.evidenceUri ? ` · ${view.bonusTask.evidenceUri.slice(0, 40)}` : ""}
               </code>
+            </div>
+          )}
+          {view && view.bonusTask.reasonHash !== ZERO_HASH && (
+            <div className="evidence">
+              <span>验收理由</span>
+              <code>{shortHash(view.bonusTask.reasonHash)}</code>
             </div>
           )}
           <div className="cardFoot">

@@ -141,7 +141,7 @@ contract CommonGroundCampaignTest is Test {
         campaign.syncMarketAndBonus();
 
         assertEq(campaign.bonusBudget(), 50);
-        (CommonGroundCampaign.TaskState state,,,,,) = campaign.bonusTask();
+        (CommonGroundCampaign.TaskState state,,,,,,) = campaign.bonusTask();
         assertEq(uint8(state), 1); // Ready
     }
 
@@ -151,7 +151,7 @@ contract CommonGroundCampaignTest is Test {
         campaign.syncMarketAndBonus();
 
         assertEq(campaign.bonusBudget(), 0);
-        (CommonGroundCampaign.TaskState state,,,,,) = campaign.bonusTask();
+        (CommonGroundCampaign.TaskState state,,,,,,) = campaign.bonusTask();
         assertEq(uint8(state), 7); // Skipped
     }
 
@@ -161,7 +161,7 @@ contract CommonGroundCampaignTest is Test {
         campaign.syncMarketAndBonus();
 
         assertEq(campaign.bonusBudget(), 0);
-        (CommonGroundCampaign.TaskState state,,,,,) = campaign.bonusTask();
+        (CommonGroundCampaign.TaskState state,,,,,,) = campaign.bonusTask();
         assertEq(uint8(state), 7); // Skipped
         assertEq(campaign.refundPool(), 25); // 50 / 2
     }
@@ -178,7 +178,7 @@ contract CommonGroundCampaignTest is Test {
         campaign.expireTask(0);
 
         assertEq(campaign.refundPool(), 100);
-        (CommonGroundCampaign.TaskState state,,,,,) = campaign.baseTask();
+        (CommonGroundCampaign.TaskState state,,,,,,) = campaign.baseTask();
         assertEq(uint8(state), 6); // Expired
     }
 

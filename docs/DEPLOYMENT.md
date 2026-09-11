@@ -17,17 +17,20 @@ Contracts: `packages/contracts`
 |---|---|---|---|
 | `CommonGroundCampaign` (forge deploy, gas-gotcha verified) | `0xe53e5d8945d6c4b771f6eb9add448967d35a8ee9` | `0x7d48e9422af49ec9bbb64d13a0f995664f9a8c82ce955a83da1caaa5d3068e68` | early deploy |
 | **`CommonGroundCampaign` (final end-to-end demo)** | **`0xb8d6153b6ca057c3b0f594493058a05f335d3198`** | `0xd431002eab001709a6cbbceb49ce534371f73394c077e2ed16ff8673425cd5a9` | one-plan escrow + task lifecycle |
-| `CommonGroundReactivityHandler` | `0x47f4c7fa7176dbc9b337274fa877ac8519aa8b20` | `0xb351dd4b4d190e205e9416df3fe35371a472574dc51a343cabdd7d60ac05d10e` | on-chain settlement trigger |
+| `CommonGroundFactory` | `0x63bFD49DbB74A1f731229258fF76495E3b2d8F90` | `0x13e9f6b5a515c95c8e6cbd0fffbf1efa442586a60b05702fe0974cc1dc2621bf` | permissionless plan factory + registry |
+| `CommonGroundReactivityHandler` (multi-plan) | `0xd5dae8eed198aca44f34974c4a2afd45a1d43e37` | `0x6df577fc227a92e14e471e1f4a106465262a7f0932da9d4e89c59074f24444d0` | on-chain settlement trigger |
 
 ### Somnia Reactivity subscriptions (live)
 
-The handler is subscribed to the campaign market's `Resolved` / `Voided` events on the
-Reactivity precompile (`0x0000000000000000000000000000000000000100`).
+The handler is a `market => campaign` registry subscribed to the campaign market's
+`Resolved` / `Voided` events on the Reactivity precompile
+(`0x0000000000000000000000000000000000000100`).
 
 | Event | Subscription id | Tx |
 |---|---|---|
-| `Resolved` | `18086415` | `0x7f0ddf0079c3ee6e0f5f5512849012da1a71f8f486b5d665dd4dfa13a0d23299` |
-| `Voided` | `18086423` | `0x2ba2b79c1d1ea87ed4eab8a4a3f2fd7b5bcd1a49eefde6ce1642b992c8e6c07b` |
+| Register campaign → market | `0x8e4ebb3735e3b1a8f79098a707f97c4352a811d98a6a0a48db603584a4b664a4` | (registration tx) |
+| `Resolved` | `18392207` | `0xe6618f9be487ca27ef9ec5d50310363d315a179c09f09c7ca520774b7de93b35` |
+| `Voided` | `18392213` | `0x1768418e74f866092b7fd2683184784e91c19ef60c546fd86a5840381c316335` |
 
 ## 3. End-to-end demo (final campaign)
 
@@ -82,10 +85,16 @@ settlement events. Requirement: the subscription owner keeps ≥ 32 STT.
 
 ## 6. Tests
 
-`forge test`: **18/18 passing** — base happy path, base reject refund, bonus win/loss/void,
+`forge test`: **22/22 passing** — base happy path, base reject refund, bonus win/loss/void,
 task expiry, funding fail, plus security/edge cases (reentrancy, zero-amount, withdraw
-insufficient, unequal-merge-min, late-deposit) and the Reactivity handler suite
-(advance / idempotent / wrong-emitter / precompile-auth / rollback).
+insufficient, unequal-merge-min, late-deposit), the factory suite (deploy + register +
+functional campaign), and the Reactivity handler registry suite (advance / idempotent /
+unregistered-emitter / market-mismatch / precompile-auth / owner-auth / rollback).
+
+## 6.1 CI
+
+GitHub Actions (`.github/workflows/ci.yml`) runs `forge test` (Foundry) plus the market,
+worker, and web TypeScript builds on every push and pull request.
 
 ## 7. Contract source verification
 
