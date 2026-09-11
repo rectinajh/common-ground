@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build --workspace @common-ground/web",
+  "outputDirectory": "apps/web/dist",
+  "framework": "vite"
+}

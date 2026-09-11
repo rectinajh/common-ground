@@ -28,3 +28,6 @@ artifacts/
 .coverage/
 coverage/
 .demo-state.json
+
+# Vercel
+.vercel
