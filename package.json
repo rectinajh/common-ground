@@ -14,6 +14,7 @@
   "scripts": {
     "spike:market": "npm run spike --workspace @common-ground/market --",
     "worker:once": "npm run once --workspace @common-ground/worker",
+    "web:dev": "npm run dev --workspace @common-ground/web",
     "typecheck": "tsc --noEmit -p packages/market/tsconfig.json"
   },
   "devDependencies": {
